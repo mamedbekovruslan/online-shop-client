@@ -1,4 +1,4 @@
-import { Box } from "@chakra-ui/react";
+import { Box, Flex } from "@chakra-ui/react";
 import { Header } from "../header/header";
 
 export const Layout = ({ children }) => {
@@ -11,7 +11,7 @@ export const Layout = ({ children }) => {
       alignItems="center"
     >
       <Header />
-      {children}
+      <Box w="100%">{children}</Box>
     </Box>
   );
 };
