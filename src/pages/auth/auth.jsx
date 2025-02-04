@@ -12,9 +12,10 @@ import {
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { login } from "../../api/auth";
 
 const loginSchema = yup.object({
-  email: yup.string().email("Неверный email").required("Email обязателен"),
+  username: yup.string().required("Логин обязателен"),
   password: yup
     .string()
     .min(6, "Пароль должен быть не менее 6 символов")
@@ -23,7 +24,7 @@ const loginSchema = yup.object({
 
 const registerSchema = yup.object({
   name: yup.string().required("Имя обязательно"),
-  email: yup.string().email("Неверный email").required("Email обязателен"),
+  username: yup.string().required("Логин обязателен"),
   password: yup
     .string()
     .min(6, "Пароль должен быть не менее 6 символов")
@@ -32,6 +33,7 @@ const registerSchema = yup.object({
 
 export const Auth = () => {
   const [isRegistering, setIsRegistering] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
 
   const {
@@ -43,25 +45,45 @@ export const Auth = () => {
     resolver: yupResolver(isRegistering ? registerSchema : loginSchema),
   });
 
-  const onSubmit = (_) => {
-    if (isRegistering) {
+  const onSubmit = async (data) => {
+    setIsLoading(true);
+    try {
+      if (isRegistering) {
+        // Регистрация через метод из конфига
+        const response = await register(data);
+        toast({
+          title: "Регистрация успешна",
+          description:
+            response.data.message || "Вы успешно зарегистрировались.",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+      } else {
+        // Авторизация через метод из конфига
+        const response = await login(data);
+        toast({
+          title: "Авторизация успешна",
+          description: response.data.message || "Вы успешно авторизовались.",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+        // Сохранение токена
+        localStorage.setItem("token", response.data.token);
+      }
+      reset();
+    } catch (error) {
       toast({
-        title: "Регистрация успешна",
-        description: "Вы успешно зарегистрировались.",
-        status: "success",
+        title: "Ошибка",
+        description: error.response?.data?.message || "Что-то пошло не так.",
+        status: "error",
         duration: 3000,
         isClosable: true,
       });
-    } else {
-      toast({
-        title: "Авторизация успешна",
-        description: "Вы успешно авторизовались.",
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
+    } finally {
+      setIsLoading(false);
     }
-    reset();
   };
 
   return (
@@ -85,11 +107,11 @@ export const Auth = () => {
             </FormControl>
           )}
 
-          <FormControl isInvalid={errors.email}>
-            <FormLabel>Email</FormLabel>
-            <Input {...register("email")} placeholder="Введите ваш email" />
+          <FormControl isInvalid={errors.username}>
+            <FormLabel>Логин</FormLabel>
+            <Input {...register("username")} placeholder="Введите ваш логин" />
             <Text color="red.500" fontSize="sm">
-              {errors.email?.message}
+              {errors.username?.message}
             </Text>
           </FormControl>
 
@@ -105,7 +127,13 @@ export const Auth = () => {
             </Text>
           </FormControl>
 
-          <Button type="submit" colorScheme="teal" size="lg" width="full">
+          <Button
+            type="submit"
+            colorScheme="teal"
+            size="lg"
+            width="full"
+            isLoading={isLoading}
+          >
             {isRegistering ? "Зарегистрироваться" : "Войти"}
           </Button>
 
