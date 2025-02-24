@@ -15,3 +15,4 @@ API.interceptors.request.use((req) => {
 export const register = (data) => API.post("/register", data);
 export const login = (data) => API.post("/login", data);
 export const getCategories = () => API.get("/categories");
+export const getProducts = (params) => API.get("/products", { params });
