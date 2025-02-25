@@ -17,3 +17,4 @@ export const login = (data) => API.post("/login", data);
 export const getCategories = () => API.get("/categories");
 export const getProducts = (params) => API.get("/products", { params });
 export const deleteProduct = (id) => API.delete(`/products/${id}`);
+export const addProduct = (data) => API.post("/products", data);
