@@ -18,3 +18,5 @@ export const getCategories = () => API.get("/categories");
 export const getProducts = (params) => API.get("/products", { params });
 export const deleteProduct = (id) => API.delete(`/products/${id}`);
 export const addProduct = (data) => API.post("/products", data);
+export const updateProduct = (id, data) => API.put(`/products/${id}`, data);
+export const patchProduct = (id, data) => API.patch(`/products/${id}`, data);
