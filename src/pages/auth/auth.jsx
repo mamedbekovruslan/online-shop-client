@@ -49,7 +49,6 @@ export const Auth = () => {
     setIsLoading(true);
     try {
       if (isRegistering) {
-        // Регистрация через метод из конфига
         const response = await register(data);
         toast({
           title: "Регистрация успешна",
@@ -60,8 +59,12 @@ export const Auth = () => {
           isClosable: true,
         });
       } else {
-        // Авторизация через метод из конфига
         const response = await login(data);
+
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("username", response.data.username);
+        localStorage.setItem("role", response.data.role); // Добавляем роль пользователя
+
         toast({
           title: "Авторизация успешна",
           description: response.data.message || "Вы успешно авторизовались.",
@@ -69,8 +72,8 @@ export const Auth = () => {
           duration: 3000,
           isClosable: true,
         });
-        // Сохранение токена
-        localStorage.setItem("token", response.data.token);
+
+        window.location.href = "/"; // Перезагружаем страницу
       }
       reset();
     } catch (error) {
