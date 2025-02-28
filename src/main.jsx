@@ -6,13 +6,17 @@ import App from "./App";
 import "./index.css";
 import { theme } from "./styles/theme";
 import { Layout } from "./components/layout/layout";
+import { Provider } from "react-redux";
+import { store } from "./redux/store";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
       <ChakraProvider theme={theme}>
         <Layout>
-          <App />
+          <Provider store={store}>
+            <App />
+          </Provider>
         </Layout>
       </ChakraProvider>
     </BrowserRouter>

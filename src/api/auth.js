@@ -20,3 +20,4 @@ export const deleteProduct = (id) => API.delete(`/products/${id}`);
 export const addProduct = (data) => API.post("/products", data);
 export const updateProduct = (id, data) => API.put(`/products/${id}`, data);
 export const patchProduct = (id, data) => API.patch(`/products/${id}`, data);
+export const placeOrder = (orderData) => API.post("/order", orderData);

@@ -1,8 +1,11 @@
 import { Box, Button, Flex, Text } from "@chakra-ui/react";
+import { useDispatch } from "react-redux";
+import { addToCart } from "../../redux/cartSlice";
 import { useEffect, useState } from "react";
 import { getCategories, getProducts } from "../../api/auth";
 
 export const Home = () => {
+  const dispatch = useDispatch();
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
@@ -28,7 +31,10 @@ export const Home = () => {
     const fetchProducts = async () => {
       try {
         const response = await getProducts({ category_id: selectedCategory });
-        setProducts(response.data);
+        const filteredProducts = response.data.filter(
+          (product) => product.quantity > 0
+        );
+        setProducts(filteredProducts);
       } catch (err) {
         console.error("Error fetching products:", err);
       } finally {
@@ -62,8 +68,14 @@ export const Home = () => {
           {products.map((product) => (
             <Box key={product.id} p={4} border="1px solid #ccc" m={2}>
               <Text>{product.name}</Text>
-              <Text>Цена: {product.price}</Text>
+              <Text>Цена: {product.price} р.</Text>
               <Text>Кол-во: {product.quantity}</Text>
+              <Button
+                colorScheme="blue"
+                onClick={() => dispatch(addToCart(product))}
+              >
+                Купить
+              </Button>
             </Box>
           ))}
         </Flex>
