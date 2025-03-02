@@ -21,12 +21,16 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { deleteUser, getUsers, updateUser, addUser } from "../../api/auth";
+import { AiOutlineArrowDown, AiOutlineArrowUp } from "react-icons/ai";
 
 export const Admin = () => {
   const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]); // Фильтрованные пользователи
   const [editingUser, setEditingUser] = useState(null);
   const [deleteUserId, setDeleteUserId] = useState(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [searchUsername, setSearchUsername] = useState(""); // Поиск по username
+  const [sortOrder, setSortOrder] = useState("asc");
 
   // Состояние для нового пользователя
   const [newUser, setNewUser] = useState({
@@ -44,10 +48,24 @@ export const Admin = () => {
     try {
       const response = await getUsers();
       setUsers(response.data);
+      setFilteredUsers(response.data);
     } catch (error) {
       console.error("Ошибка загрузки пользователей:", error);
     }
   };
+
+  // Фильтрация по username
+  useEffect(() => {
+    if (searchUsername) {
+      setFilteredUsers(
+        users.filter((user) =>
+          user.username.toLowerCase().includes(searchUsername.toLowerCase())
+        )
+      );
+    } else {
+      setFilteredUsers(users);
+    }
+  }, [searchUsername, users]);
 
   const handleDeleteUser = async () => {
     try {
@@ -102,11 +120,33 @@ export const Admin = () => {
     }
   };
 
+  // Сортировка по username
+  const handleSort = () => {
+    const newOrder = sortOrder === "asc" ? "desc" : "asc";
+    setSortOrder(newOrder);
+
+    const sortedUsers = [...filteredUsers].sort((a, b) => {
+      if (a.username < b.username) return newOrder === "asc" ? -1 : 1;
+      if (a.username > b.username) return newOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    setFilteredUsers(sortedUsers);
+  };
+
   return (
     <Box p={4}>
       <Text fontSize="2xl" mb={4}>
         Управление учетными записями
       </Text>
+
+      {/* Фильтр по username */}
+      <Input
+        placeholder="Поиск по username..."
+        value={searchUsername}
+        onChange={(e) => setSearchUsername(e.target.value)}
+        mb={4}
+      />
 
       {/* Форма добавления нового пользователя */}
       <Box p={4} border="1px solid #ccc" borderRadius="md" mb={4}>
@@ -148,14 +188,21 @@ export const Admin = () => {
       <Table variant="simple">
         <Thead>
           <Tr>
-            <Th>Имя пользователя</Th>
+            <Th onClick={handleSort}>
+              Имя пользователя{" "}
+              {sortOrder === "asc" ? (
+                <AiOutlineArrowUp />
+              ) : (
+                <AiOutlineArrowDown />
+              )}
+            </Th>
             <Th>Email</Th>
             <Th>Роль</Th>
             <Th>Действия</Th>
           </Tr>
         </Thead>
         <Tbody>
-          {users.map((user) => (
+          {filteredUsers.map((user) => (
             <Tr key={user.id}>
               <Td>
                 {editingUser === user.id ? (

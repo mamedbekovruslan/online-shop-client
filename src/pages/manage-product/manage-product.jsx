@@ -19,6 +19,7 @@ import {
   FormControl,
   FormLabel,
 } from "@chakra-ui/react";
+import { AiOutlineArrowUp, AiOutlineArrowDown } from "react-icons/ai"; // Иконки сортировки
 import { useState, useEffect } from "react";
 import {
   addProduct,
@@ -31,10 +32,17 @@ import {
 
 export const ManageProduct = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [categories, setCategories] = useState([]);
+
   const [isEditing, setIsEditing] = useState(false);
+  const [sortColumn, setSortColumn] = useState(null);
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
 
   const [newProduct, setNewProduct] = useState({
     name: "",
@@ -44,11 +52,13 @@ export const ManageProduct = () => {
     image: "",
   });
 
+  // Получение товаров и категорий
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const response = await getProducts();
         setProducts(response.data);
+        setFilteredProducts(response.data);
       } catch (err) {
         console.error("Error fetching products:", err);
       }
@@ -67,6 +77,41 @@ export const ManageProduct = () => {
     fetchCategories();
   }, []);
 
+  // Фильтрация товаров
+  useEffect(() => {
+    let filtered = products;
+
+    if (searchQuery) {
+      filtered = filtered.filter((product) =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    if (selectedCategory) {
+      filtered = filtered.filter(
+        (product) => product.category_id === Number(selectedCategory)
+      );
+    }
+
+    setFilteredProducts(filtered);
+  }, [searchQuery, selectedCategory, products]);
+
+  // Сортировка товаров
+  const handleSort = (column) => {
+    const order = sortColumn === column && sortOrder === "asc" ? "desc" : "asc";
+    setSortColumn(column);
+    setSortOrder(order);
+
+    const sortedProducts = [...filteredProducts].sort((a, b) => {
+      if (a[column] < b[column]) return order === "asc" ? -1 : 1;
+      if (a[column] > b[column]) return order === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    setFilteredProducts(sortedProducts);
+  };
+
+  // Удаление товара
   const handleDeleteProduct = (id) => {
     setSelectedProductId(id);
     onOpen();
@@ -85,14 +130,13 @@ export const ManageProduct = () => {
     }
   };
 
+  // Обработка изменения полей формы
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewProduct({
-      ...newProduct,
-      [name]: value,
-    });
+    setNewProduct((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Редактирование товара
   const handleEditProduct = (product) => {
     setIsEditing(true);
     setSelectedProductId(product.id);
@@ -101,10 +145,11 @@ export const ManageProduct = () => {
       category_id: product.category_id,
       price: product.price,
       quantity: product.quantity,
-      image: product.photo, // Изменил photo на image для согласованности
+      image: product.photo,
     });
   };
 
+  // Сохранение товара (добавление или редактирование)
   const handleSaveProduct = async () => {
     if (
       !newProduct.name ||
@@ -122,10 +167,11 @@ export const ManageProduct = () => {
         price: Number(newProduct.price),
         quantity: Number(newProduct.quantity),
         category_id: Number(newProduct.category_id),
-        photo: newProduct.image, // Отправляем на сервер как photo
+        photo: newProduct.image,
       };
 
       if (isEditing) {
+        // Формируем объект обновляемых полей
         const updatedFields = {};
         Object.keys(productToUpdate).forEach((key) => {
           if (productToUpdate[key] !== "" && productToUpdate[key] !== null) {
@@ -133,6 +179,7 @@ export const ManageProduct = () => {
           }
         });
 
+        // Если обновляем все поля - используем updateProduct, иначе patchProduct
         if (
           Object.keys(updatedFields).length === Object.keys(newProduct).length
         ) {
@@ -141,31 +188,24 @@ export const ManageProduct = () => {
           await patchProduct(selectedProductId, updatedFields);
         }
 
-        const updatedProducts = products.map((product) =>
-          product.id === selectedProductId
-            ? { ...product, ...updatedFields }
-            : product
+        setProducts(
+          products.map((p) =>
+            p.id === selectedProductId ? { ...p, ...updatedFields } : p
+          )
         );
-        setProducts(updatedProducts);
         setIsEditing(false);
-        setNewProduct({
-          name: "",
-          category_id: "",
-          price: "",
-          quantity: "",
-          image: "",
-        });
       } else {
         const response = await addProduct(productToUpdate);
         setProducts([...products, response.data]);
-        setNewProduct({
-          name: "",
-          category_id: "",
-          price: "",
-          quantity: "",
-          image: "",
-        });
       }
+
+      setNewProduct({
+        name: "",
+        category_id: "",
+        price: "",
+        quantity: "",
+        image: "",
+      });
     } catch (err) {
       console.error("Error saving product:", err);
       alert("Ошибка при сохранении товара");
@@ -180,7 +220,8 @@ export const ManageProduct = () => {
   return (
     <Flex direction="column">
       <h1>{isEditing ? "Редактирование товара" : "Добавление товара"}</h1>
-      <Flex direction="column">
+      {/* Форма добавления/редактирования товара */}
+      <Flex direction="column" mb={8}>
         <FormControl id="name" mb={4}>
           <FormLabel>Название товара</FormLabel>
           <Input
@@ -234,33 +275,89 @@ export const ManageProduct = () => {
         </Button>
       </Flex>
 
-      <TableContainer mt={8}>
+      {/* Фильтры */}
+      <Flex mb={4} gap={4}>
+        <Input
+          placeholder="Поиск по наименованию..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        <Select
+          placeholder="Все категории"
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+        >
+          {categories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.name}
+            </option>
+          ))}
+        </Select>
+      </Flex>
+
+      {/* Таблица товаров */}
+      <TableContainer>
         <Table variant="simple">
           <Thead>
             <Tr>
-              <Th>Id</Th>
-              <Th>Наименование</Th>
+              <Th onClick={() => handleSort("id")}>
+                ID{" "}
+                {sortColumn === "id" &&
+                  (sortOrder === "asc" ? (
+                    <AiOutlineArrowUp />
+                  ) : (
+                    <AiOutlineArrowDown />
+                  ))}
+              </Th>
+              <Th onClick={() => handleSort("name")}>
+                Наименование{" "}
+                {sortColumn === "name" &&
+                  (sortOrder === "asc" ? (
+                    <AiOutlineArrowUp />
+                  ) : (
+                    <AiOutlineArrowDown />
+                  ))}
+              </Th>
               <Th>Категория</Th>
-              <Th>Стоимость</Th>
-              <Th>Кол-во</Th>
+              <Th onClick={() => handleSort("price")}>
+                Стоимость{" "}
+                {sortColumn === "price" &&
+                  (sortOrder === "asc" ? (
+                    <AiOutlineArrowUp />
+                  ) : (
+                    <AiOutlineArrowDown />
+                  ))}
+              </Th>
+              <Th onClick={() => handleSort("quantity")}>
+                Кол-во{" "}
+                {sortColumn === "quantity" &&
+                  (sortOrder === "asc" ? (
+                    <AiOutlineArrowUp />
+                  ) : (
+                    <AiOutlineArrowDown />
+                  ))}
+              </Th>
               <Th>Фото</Th>
               <Th>Действия</Th>
             </Tr>
           </Thead>
           <Tbody>
-            {products.map((product) => (
+            {filteredProducts.map((product) => (
               <Tr key={product.id}>
                 <Th>{product.id}</Th>
                 <Th>{product.name}</Th>
                 <Th>{getCategoryNameById(product.category_id)}</Th>
-                <Th>{product.price}р</Th>
-                <Th>{product.quantity}шт</Th>
+                <Th>{product.price} р</Th>
+                <Th>{product.quantity} шт</Th>
                 <Th>{product.photo}</Th>
                 <Th>
                   <Button onClick={() => handleEditProduct(product)}>
                     Изменить
                   </Button>
-                  <Button onClick={() => handleDeleteProduct(product.id)}>
+                  <Button
+                    onClick={() => handleDeleteProduct(product.id)}
+                    colorScheme="red"
+                  >
                     Удалить
                   </Button>
                 </Th>
@@ -269,15 +366,15 @@ export const ManageProduct = () => {
           </Tbody>
         </Table>
       </TableContainer>
+
+      {/* Модальное окно для подтверждения удаления */}
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Удалить товар</ModalHeader>
           <ModalBody>Вы действительно хотите удалить этот товар?</ModalBody>
           <ModalFooter>
-            <Button colorScheme="blue" mr={3} onClick={onClose}>
-              Нет
-            </Button>
+            <Button onClick={onClose}>Нет</Button>
             <Button colorScheme="red" onClick={confirmDelete}>
               Да
             </Button>
