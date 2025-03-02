@@ -1,4 +1,5 @@
 import { Box, Button, Flex, Input, Text } from "@chakra-ui/react";
+import { AiOutlineArrowUp, AiOutlineArrowDown } from "react-icons/ai"; // Иконки сортировки
 import { useDispatch } from "react-redux";
 import { addToCart } from "../../redux/cartSlice";
 import { useEffect, useState } from "react";
@@ -12,6 +13,7 @@ export const Home = () => {
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState(""); // Состояние для поиска
+  const [sortOrder, setSortOrder] = useState("asc"); // Состояние сортировки
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -53,6 +55,18 @@ export const Home = () => {
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Сортировка товаров по стоимости
+  const handleSortByPrice = () => {
+    const newOrder = sortOrder === "asc" ? "desc" : "asc";
+    setSortOrder(newOrder);
+
+    const sortedProducts = [...filteredProducts].sort((a, b) => {
+      return newOrder === "asc" ? a.price - b.price : b.price - a.price;
+    });
+
+    setProducts(sortedProducts);
+  };
+
   if (loadingCategories || loadingProducts) {
     return <Text>Загрузка...</Text>;
   }
@@ -82,8 +96,19 @@ export const Home = () => {
         </Box>
 
         {/* Блок товаров */}
-        <Box>
-          <Text>Товары</Text>
+        <Box flex="1">
+          <Flex justify="space-between" align="center">
+            <Text fontSize="xl">Товары</Text>
+            <Button onClick={handleSortByPrice}>
+              Сортировка по цене{" "}
+              {sortOrder === "asc" ? (
+                <AiOutlineArrowUp />
+              ) : (
+                <AiOutlineArrowDown />
+              )}
+            </Button>
+          </Flex>
+
           <Flex wrap="wrap">
             {filteredProducts.length > 0 ? (
               filteredProducts.map((product) => (
