@@ -10,13 +10,13 @@ export const Home = () => {
   const [products, setProducts] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("all");
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await getCategories();
-        setCategories(response.data);
+        setCategories([{ id: "all", name: "Все" }, ...response.data]);
       } catch (err) {
         console.error("Error fetching categories:", err);
       } finally {
@@ -30,7 +30,9 @@ export const Home = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await getProducts({ category_id: selectedCategory });
+        const response = await getProducts(
+          selectedCategory === "all" ? {} : { category_id: selectedCategory }
+        );
         const filteredProducts = response.data.filter(
           (product) => product.quantity > 0
         );
