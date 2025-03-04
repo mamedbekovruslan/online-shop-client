@@ -14,7 +14,7 @@ const App = () => {
 
   const element = useRoutes(routes);
 
-  return <div>{element}</div>;
+  return <div style={{ width: "100%" }}>{element}</div>;
 };
 
 export default App;

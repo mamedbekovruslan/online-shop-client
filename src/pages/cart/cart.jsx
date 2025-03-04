@@ -14,7 +14,7 @@ export const Cart = () => {
   );
 
   return (
-    <Flex direction="column" p={4}>
+    <Flex direction="column">
       <Text fontSize="2xl" mb={4}>
         Корзина
       </Text>
@@ -27,7 +27,6 @@ export const Cart = () => {
               key={item.id}
               p={4}
               border="1px solid #ccc"
-              m={2}
               align="center"
               cursor="pointer"
               onClick={() => navigate(`/product/${item.id}`)} // Кликабельность товаров
@@ -59,7 +58,6 @@ export const Cart = () => {
                 </Flex>
               </Box>
               <Button
-                colorScheme="red"
                 onClick={(e) => {
                   e.stopPropagation();
                   dispatch(removeFromCart(item.id));

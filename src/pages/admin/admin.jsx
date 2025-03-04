@@ -19,6 +19,7 @@ import {
   ModalFooter,
   Text,
   VStack,
+  Flex,
 } from "@chakra-ui/react";
 import { deleteUser, getUsers, updateUser, addUser } from "../../api/auth";
 import { AiOutlineArrowDown, AiOutlineArrowUp } from "react-icons/ai";
@@ -96,7 +97,6 @@ export const Admin = () => {
     );
   };
 
-  // Обработчик изменения полей нового пользователя
   const handleNewUserChange = (field, value) => {
     setNewUser((prev) => ({
       ...prev,
@@ -104,7 +104,6 @@ export const Admin = () => {
     }));
   };
 
-  // Добавление нового пользователя
   const handleAddUser = async () => {
     if (!newUser.username || !newUser.email || !newUser.password) {
       alert("Заполните все поля!");
@@ -114,7 +113,7 @@ export const Admin = () => {
     try {
       await addUser(newUser);
       setNewUser({ username: "", email: "", password: "", role: "user" });
-      fetchUsers(); // Обновляем список пользователей после добавления
+      fetchUsers();
     } catch (error) {
       console.error("Ошибка при добавлении пользователя:", error);
     }
@@ -135,148 +134,147 @@ export const Admin = () => {
   };
 
   return (
-    <Box p={4}>
+    <Box>
       <Text fontSize="2xl" mb={4}>
         Управление учетными записями
       </Text>
 
-      {/* Фильтр по username */}
-      <Input
-        placeholder="Поиск по username..."
-        value={searchUsername}
-        onChange={(e) => setSearchUsername(e.target.value)}
-        mb={4}
-      />
+      <Flex justifyContent="space-between">
+        <Box p={4} border="1px solid #ccc" borderRadius="md" mb={4} w="20%">
+          <Text fontSize="l" mb={2}>
+            Добавить пользователя
+          </Text>
+          <VStack spacing={2} align="stretch">
+            <Input
+              placeholder="Имя пользователя"
+              value={newUser.username}
+              onChange={(e) => handleNewUserChange("username", e.target.value)}
+            />
+            <Input
+              placeholder="Email"
+              value={newUser.email}
+              onChange={(e) => handleNewUserChange("email", e.target.value)}
+            />
+            <Input
+              placeholder="Пароль"
+              type="password"
+              value={newUser.password}
+              onChange={(e) => handleNewUserChange("password", e.target.value)}
+            />
+            <Select
+              value={newUser.role}
+              onChange={(e) => handleNewUserChange("role", e.target.value)}
+            >
+              <option value="admin">admin</option>
+              <option value="moder">moder</option>
+              <option value="user">user</option>
+            </Select>
+            <Button colorScheme="green" onClick={handleAddUser}>
+              Добавить
+            </Button>
+          </VStack>
+        </Box>
 
-      {/* Форма добавления нового пользователя */}
-      <Box p={4} border="1px solid #ccc" borderRadius="md" mb={4}>
-        <Text fontSize="xl" mb={2}>
-          Добавить нового пользователя
-        </Text>
-        <VStack spacing={2} align="stretch">
+        <Box w="78%">
           <Input
-            placeholder="Имя пользователя"
-            value={newUser.username}
-            onChange={(e) => handleNewUserChange("username", e.target.value)}
+            placeholder="Поиск по username..."
+            value={searchUsername}
+            onChange={(e) => setSearchUsername(e.target.value)}
+            mb={4}
           />
-          <Input
-            placeholder="Email"
-            value={newUser.email}
-            onChange={(e) => handleNewUserChange("email", e.target.value)}
-          />
-          <Input
-            placeholder="Пароль"
-            type="password"
-            value={newUser.password}
-            onChange={(e) => handleNewUserChange("password", e.target.value)}
-          />
-          <Select
-            value={newUser.role}
-            onChange={(e) => handleNewUserChange("role", e.target.value)}
-          >
-            <option value="admin">admin</option>
-            <option value="moder">moder</option>
-            <option value="user">user</option>
-          </Select>
-          <Button colorScheme="green" onClick={handleAddUser}>
-            Добавить
-          </Button>
-        </VStack>
-      </Box>
+          <Table variant="simple">
+            <Thead>
+              <Tr>
+                <Th onClick={handleSort}>
+                  Имя пользователя{" "}
+                  {sortOrder === "asc" ? (
+                    <AiOutlineArrowUp />
+                  ) : (
+                    <AiOutlineArrowDown />
+                  )}
+                </Th>
+                <Th>Email</Th>
+                <Th>Роль</Th>
+                <Th>Действия</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {filteredUsers.map((user) => (
+                <Tr key={user.id}>
+                  <Td>
+                    {editingUser === user.id ? (
+                      <Input
+                        value={user.username}
+                        onChange={(e) =>
+                          handleInputChange(user.id, "username", e.target.value)
+                        }
+                      />
+                    ) : (
+                      user.username
+                    )}
+                  </Td>
+                  <Td>
+                    {editingUser === user.id ? (
+                      <Input
+                        value={user.email}
+                        onChange={(e) =>
+                          handleInputChange(user.id, "email", e.target.value)
+                        }
+                      />
+                    ) : (
+                      user.email
+                    )}
+                  </Td>
+                  <Td>
+                    {editingUser === user.id ? (
+                      <Select
+                        value={user.role}
+                        onChange={(e) =>
+                          handleInputChange(user.id, "role", e.target.value)
+                        }
+                      >
+                        <option value="admin">admin</option>
+                        <option value="moder">moder</option>
+                        <option value="user">user</option>
+                      </Select>
+                    ) : (
+                      user.role
+                    )}
+                  </Td>
+                  <Td>
+                    {editingUser === user.id ? (
+                      <Button
+                        colorScheme="green"
+                        onClick={() => handleUpdateUser(user.id)}
+                      >
+                        Сохранить
+                      </Button>
+                    ) : (
+                      <Button
+                        colorScheme="blue"
+                        onClick={() => setEditingUser(user.id)}
+                      >
+                        Редактировать
+                      </Button>
+                    )}
+                    <Button
+                      colorScheme="red"
+                      ml={2}
+                      onClick={() => {
+                        setDeleteUserId(user.id);
+                        onOpen();
+                      }}
+                    >
+                      Удалить
+                    </Button>
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        </Box>
+      </Flex>
 
-      {/* Таблица пользователей */}
-      <Table variant="simple">
-        <Thead>
-          <Tr>
-            <Th onClick={handleSort}>
-              Имя пользователя{" "}
-              {sortOrder === "asc" ? (
-                <AiOutlineArrowUp />
-              ) : (
-                <AiOutlineArrowDown />
-              )}
-            </Th>
-            <Th>Email</Th>
-            <Th>Роль</Th>
-            <Th>Действия</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {filteredUsers.map((user) => (
-            <Tr key={user.id}>
-              <Td>
-                {editingUser === user.id ? (
-                  <Input
-                    value={user.username}
-                    onChange={(e) =>
-                      handleInputChange(user.id, "username", e.target.value)
-                    }
-                  />
-                ) : (
-                  user.username
-                )}
-              </Td>
-              <Td>
-                {editingUser === user.id ? (
-                  <Input
-                    value={user.email}
-                    onChange={(e) =>
-                      handleInputChange(user.id, "email", e.target.value)
-                    }
-                  />
-                ) : (
-                  user.email
-                )}
-              </Td>
-              <Td>
-                {editingUser === user.id ? (
-                  <Select
-                    value={user.role}
-                    onChange={(e) =>
-                      handleInputChange(user.id, "role", e.target.value)
-                    }
-                  >
-                    <option value="admin">admin</option>
-                    <option value="moder">moder</option>
-                    <option value="user">user</option>
-                  </Select>
-                ) : (
-                  user.role
-                )}
-              </Td>
-              <Td>
-                {editingUser === user.id ? (
-                  <Button
-                    colorScheme="green"
-                    onClick={() => handleUpdateUser(user.id)}
-                  >
-                    Сохранить
-                  </Button>
-                ) : (
-                  <Button
-                    colorScheme="blue"
-                    onClick={() => setEditingUser(user.id)}
-                  >
-                    Редактировать
-                  </Button>
-                )}
-                <Button
-                  colorScheme="red"
-                  ml={2}
-                  onClick={() => {
-                    setDeleteUserId(user.id);
-                    onOpen();
-                  }}
-                >
-                  Удалить
-                </Button>
-              </Td>
-            </Tr>
-          ))}
-        </Tbody>
-      </Table>
-
-      {/* Модальное окно для удаления */}
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>

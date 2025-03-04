@@ -18,8 +18,16 @@ import {
   ModalFooter,
   FormControl,
   FormLabel,
+  Box,
+  IconButton,
+  Text,
 } from "@chakra-ui/react";
-import { AiOutlineArrowUp, AiOutlineArrowDown } from "react-icons/ai"; // Иконки сортировки
+import {
+  AiOutlineArrowUp,
+  AiOutlineArrowDown,
+  AiOutlineSave,
+  AiOutlineDelete,
+} from "react-icons/ai"; // Иконки сортировки
 import { useState, useEffect } from "react";
 import {
   addProduct,
@@ -199,147 +207,164 @@ export const ManageProduct = () => {
 
   return (
     <Flex direction="column">
-      <h1>{isEditing ? "Редактирование товара" : "Добавление товара"}</h1>
-      <Flex direction="column" mb={8}>
-        <FormControl id="name" mb={4}>
-          <FormLabel>Название товара</FormLabel>
-          <Input
-            name="name"
-            value={newProduct.name}
-            onChange={handleInputChange}
-          />
-        </FormControl>
-        <FormControl id="category" mb={4}>
-          <FormLabel>Категория</FormLabel>
-          <Select
-            name="category_id"
-            value={newProduct.category_id}
-            onChange={handleInputChange}
-          >
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl id="price" mb={4}>
-          <FormLabel>Цена</FormLabel>
-          <Input
-            name="price"
-            type="number"
-            value={newProduct.price}
-            onChange={handleInputChange}
-          />
-        </FormControl>
-        <FormControl id="quantity" mb={4}>
-          <FormLabel>Количество</FormLabel>
-          <Input
-            name="quantity"
-            type="number"
-            value={newProduct.quantity}
-            onChange={handleInputChange}
-          />
-        </FormControl>
-        <FormControl id="image" mb={4}>
-          <FormLabel>Фото</FormLabel>
-          <Input type="file" accept="image/*" onChange={handleImageChange} />
-        </FormControl>
-        <Button colorScheme="blue" onClick={handleSaveProduct}>
-          {isEditing ? "Сохранить изменения" : "Добавить товар"}
-        </Button>
-      </Flex>
+      <Text fontSize="2xl" mb={4}>
+        {isEditing ? "Редактирование товара" : "Добавление товара"}
+      </Text>
+      <Box display="flex" justifyContent="space-between">
+        <Flex direction="column" mb={8} w="20%">
+          <FormControl id="name" mb={4}>
+            <FormLabel>Название товара</FormLabel>
+            <Input
+              name="name"
+              value={newProduct.name}
+              onChange={handleInputChange}
+            />
+          </FormControl>
+          <FormControl id="category" mb={4}>
+            <FormLabel>Категория</FormLabel>
+            <Select
+              name="category_id"
+              value={newProduct.category_id}
+              onChange={handleInputChange}
+            >
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl id="price" mb={4}>
+            <FormLabel>Цена</FormLabel>
+            <Input
+              name="price"
+              type="number"
+              value={newProduct.price}
+              onChange={handleInputChange}
+            />
+          </FormControl>
+          <FormControl id="quantity" mb={4}>
+            <FormLabel>Количество</FormLabel>
+            <Input
+              name="quantity"
+              type="number"
+              value={newProduct.quantity}
+              onChange={handleInputChange}
+            />
+          </FormControl>
+          <FormControl id="image" mb={4}>
+            <FormLabel>Фото</FormLabel>
+            <Input type="file" accept="image/*" onChange={handleImageChange} />
+          </FormControl>
+          <Button colorScheme="blue" onClick={handleSaveProduct}>
+            {isEditing ? "Сохранить изменения" : "Добавить товар"}
+          </Button>
+        </Flex>
 
-      {/* Фильтры */}
-      <Flex mb={4} gap={4}>
-        <Input
-          placeholder="Поиск по наименованию..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-        <Select
-          placeholder="Все категории"
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-        >
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </Select>
-      </Flex>
+        <Box w="78%">
+          <Flex mt={8} mb={4} gap={4}>
+            <Input
+              placeholder="Поиск по наименованию..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <Select
+              placeholder="Все категории"
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+            >
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </Select>
+          </Flex>
 
-      <TableContainer>
-        <Table variant="simple">
-          <Thead>
-            <Tr>
-              <Th onClick={() => handleSort("id")}>
-                ID{" "}
-                {sortColumn === "id" &&
-                  (sortOrder === "asc" ? (
-                    <AiOutlineArrowUp />
-                  ) : (
-                    <AiOutlineArrowDown />
-                  ))}
-              </Th>
-              <Th onClick={() => handleSort("name")}>
-                Наименование{" "}
-                {sortColumn === "name" &&
-                  (sortOrder === "asc" ? (
-                    <AiOutlineArrowUp />
-                  ) : (
-                    <AiOutlineArrowDown />
-                  ))}
-              </Th>
-              <Th>Категория</Th>
-              <Th onClick={() => handleSort("price")}>
-                Стоимость{" "}
-                {sortColumn === "price" &&
-                  (sortOrder === "asc" ? (
-                    <AiOutlineArrowUp />
-                  ) : (
-                    <AiOutlineArrowDown />
-                  ))}
-              </Th>
-              <Th onClick={() => handleSort("quantity")}>
-                Кол-во{" "}
-                {sortColumn === "quantity" &&
-                  (sortOrder === "asc" ? (
-                    <AiOutlineArrowUp />
-                  ) : (
-                    <AiOutlineArrowDown />
-                  ))}
-              </Th>
-              <Th>Фото</Th>
-              <Th>Действия</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {filteredProducts.map((product) => (
-              <Tr key={product.id}>
-                <Th>{product.id}</Th>
-                <Th>{product.name}</Th>
-                <Th>{getCategoryNameById(product.category_id)}</Th>
-                <Th>{product.price} р</Th>
-                <Th>{product.quantity} шт</Th>
-                <Th>{product.photo}</Th>
-                <Th>
-                  <Button onClick={() => handleEditProduct(product)}>
-                    Изменить
-                  </Button>
-                  <Button
-                    onClick={() => handleDeleteProduct(product.id)}
-                    colorScheme="red"
-                  >
-                    Удалить
-                  </Button>
-                </Th>
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
-      </TableContainer>
+          <TableContainer>
+            <Table variant="simple">
+              <Thead>
+                <Tr>
+                  <Th onClick={() => handleSort("id")}>
+                    ID{" "}
+                    {sortColumn === "id" &&
+                      (sortOrder === "asc" ? (
+                        <AiOutlineArrowUp />
+                      ) : (
+                        <AiOutlineArrowDown />
+                      ))}
+                  </Th>
+                  <Th onClick={() => handleSort("name")}>
+                    Наименование{" "}
+                    {sortColumn === "name" &&
+                      (sortOrder === "asc" ? (
+                        <AiOutlineArrowUp />
+                      ) : (
+                        <AiOutlineArrowDown />
+                      ))}
+                  </Th>
+                  <Th>Категория</Th>
+                  <Th onClick={() => handleSort("price")}>
+                    Стоимость{" "}
+                    {sortColumn === "price" &&
+                      (sortOrder === "asc" ? (
+                        <AiOutlineArrowUp />
+                      ) : (
+                        <AiOutlineArrowDown />
+                      ))}
+                  </Th>
+                  <Th onClick={() => handleSort("quantity")}>
+                    Кол-во{" "}
+                    {sortColumn === "quantity" &&
+                      (sortOrder === "asc" ? (
+                        <AiOutlineArrowUp />
+                      ) : (
+                        <AiOutlineArrowDown />
+                      ))}
+                  </Th>
+                  <Th w="100px" maxW="100px">
+                    Фото
+                  </Th>
+                  <Th>Действия</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {filteredProducts.map((product) => (
+                  <Tr key={product.id}>
+                    <Th>{product.id}</Th>
+                    <Th>{product.name}</Th>
+                    <Th>{getCategoryNameById(product.category_id)}</Th>
+                    <Th>{product.price} р</Th>
+                    <Th>{product.quantity} шт</Th>
+                    <Th w="100px" maxW="100px" overflow="hidden">
+                      {product.photo}
+                    </Th>
+                    <Th>
+                      {/* Иконка "Сохранить изменения" */}
+                      <IconButton
+                        aria-label="Сохранить"
+                        icon={<AiOutlineSave />}
+                        colorScheme="green"
+                        size="sm"
+                        mr={2}
+                        onClick={() => handleSaveProduct(product)}
+                      />
+                      {/* Иконка "Удалить товар" */}
+                      <IconButton
+                        aria-label="Удалить"
+                        icon={<AiOutlineDelete />}
+                        colorScheme="red"
+                        size="sm"
+                        onClick={() => handleDeleteProduct(product.id)}
+                      />
+                    </Th>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </TableContainer>
+        </Box>
+      </Box>
 
       {/* Модальное окно для подтверждения удаления */}
       <Modal isOpen={isOpen} onClose={onClose}>
