@@ -32,7 +32,6 @@ import {
 
 export const ManageProduct = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedProductId, setSelectedProductId] = useState(null);
@@ -43,22 +42,21 @@ export const ManageProduct = () => {
   const [sortOrder, setSortOrder] = useState("asc");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [imageFile, setImageFile] = useState(null);
 
   const [newProduct, setNewProduct] = useState({
     name: "",
     category_id: "",
     price: "",
     quantity: "",
-    image: "",
+    photo: "",
   });
 
-  // Получение товаров и категорий
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const response = await getProducts();
         setProducts(response.data);
-        setFilteredProducts(response.data);
       } catch (err) {
         console.error("Error fetching products:", err);
       }
@@ -130,13 +128,15 @@ export const ManageProduct = () => {
     }
   };
 
-  // Обработка изменения полей формы
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewProduct((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Редактирование товара
+  const handleImageChange = (e) => {
+    setImageFile(e.target.files[0]);
+  };
+
   const handleEditProduct = (product) => {
     setIsEditing(true);
     setSelectedProductId(product.id);
@@ -145,11 +145,10 @@ export const ManageProduct = () => {
       category_id: product.category_id,
       price: product.price,
       quantity: product.quantity,
-      image: product.photo,
+      photo: product.photo,
     });
   };
 
-  // Сохранение товара (добавление или редактирование)
   const handleSaveProduct = async () => {
     if (
       !newProduct.name ||
@@ -162,40 +161,20 @@ export const ManageProduct = () => {
     }
 
     try {
-      const productToUpdate = {
-        ...newProduct,
-        price: Number(newProduct.price),
-        quantity: Number(newProduct.quantity),
-        category_id: Number(newProduct.category_id),
-        photo: newProduct.image,
-      };
+      const formData = new FormData();
+      formData.append("name", newProduct.name);
+      formData.append("category_id", newProduct.category_id);
+      formData.append("price", newProduct.price);
+      formData.append("quantity", newProduct.quantity);
+
+      if (imageFile) {
+        formData.append("photo", imageFile); // Добавляем файл
+      }
 
       if (isEditing) {
-        // Формируем объект обновляемых полей
-        const updatedFields = {};
-        Object.keys(productToUpdate).forEach((key) => {
-          if (productToUpdate[key] !== "" && productToUpdate[key] !== null) {
-            updatedFields[key] = productToUpdate[key];
-          }
-        });
-
-        // Если обновляем все поля - используем updateProduct, иначе patchProduct
-        if (
-          Object.keys(updatedFields).length === Object.keys(newProduct).length
-        ) {
-          await updateProduct(selectedProductId, updatedFields);
-        } else {
-          await patchProduct(selectedProductId, updatedFields);
-        }
-
-        setProducts(
-          products.map((p) =>
-            p.id === selectedProductId ? { ...p, ...updatedFields } : p
-          )
-        );
-        setIsEditing(false);
+        await patchProduct(selectedProductId, formData);
       } else {
-        const response = await addProduct(productToUpdate);
+        const response = await addProduct(formData);
         setProducts([...products, response.data]);
       }
 
@@ -204,10 +183,11 @@ export const ManageProduct = () => {
         category_id: "",
         price: "",
         quantity: "",
-        image: "",
+        photo: "",
       });
+      setImageFile(null);
     } catch (err) {
-      console.error("Error saving product:", err);
+      console.error("Ошибка сохранения товара:", err);
       alert("Ошибка при сохранении товара");
     }
   };
@@ -220,7 +200,6 @@ export const ManageProduct = () => {
   return (
     <Flex direction="column">
       <h1>{isEditing ? "Редактирование товара" : "Добавление товара"}</h1>
-      {/* Форма добавления/редактирования товара */}
       <Flex direction="column" mb={8}>
         <FormControl id="name" mb={4}>
           <FormLabel>Название товара</FormLabel>
@@ -264,11 +243,7 @@ export const ManageProduct = () => {
         </FormControl>
         <FormControl id="image" mb={4}>
           <FormLabel>Фото</FormLabel>
-          <Input
-            name="image"
-            value={newProduct.image}
-            onChange={handleInputChange}
-          />
+          <Input type="file" accept="image/*" onChange={handleImageChange} />
         </FormControl>
         <Button colorScheme="blue" onClick={handleSaveProduct}>
           {isEditing ? "Сохранить изменения" : "Добавить товар"}
@@ -295,7 +270,6 @@ export const ManageProduct = () => {
         </Select>
       </Flex>
 
-      {/* Таблица товаров */}
       <TableContainer>
         <Table variant="simple">
           <Thead>
