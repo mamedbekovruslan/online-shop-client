@@ -4,16 +4,18 @@ import { useDispatch } from "react-redux";
 import { addToCart } from "../../redux/cartSlice";
 import { useEffect, useState } from "react";
 import { getCategories, getProducts } from "../../api/auth";
+import { useNavigate } from "react-router-dom"; // Импортируем хук навигации
 
 export const Home = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate(); // Хук для перехода на страницу товара
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [searchTerm, setSearchTerm] = useState(""); // Состояние для поиска
-  const [sortOrder, setSortOrder] = useState("asc"); // Состояние сортировки
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortOrder, setSortOrder] = useState("asc");
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -112,13 +114,23 @@ export const Home = () => {
           <Flex wrap="wrap">
             {filteredProducts.length > 0 ? (
               filteredProducts.map((product) => (
-                <Box key={product.id} p={4} border="1px solid #ccc" m={2}>
+                <Box
+                  key={product.id}
+                  p={4}
+                  border="1px solid #ccc"
+                  m={2}
+                  cursor="pointer"
+                  onClick={() => navigate(`/product/${product.id}`)} // Переход на страницу товара
+                >
                   <Text>{product.name}</Text>
                   <Text>Цена: {product.price} р.</Text>
                   <Text>Кол-во: {product.quantity}</Text>
                   <Button
                     colorScheme="blue"
-                    onClick={() => dispatch(addToCart(product))}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Останавливаем всплытие события, чтобы не срабатывал navigate
+                      dispatch(addToCart(product));
+                    }}
                   >
                     Купить
                   </Button>
