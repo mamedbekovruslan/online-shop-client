@@ -177,7 +177,8 @@ export const ManageProduct = () => {
       formData.append("quantity", newProduct.quantity);
 
       if (imageFile) {
-        formData.append("photo", imageFile);
+        console.log("Файл для загрузки:", imageFile.name);
+        formData.append("photo", imageFile, imageFile.name); // <-- добавляем правильное имя файла
       }
 
       if (isEditing) {
