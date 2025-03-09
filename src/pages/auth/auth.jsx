@@ -86,14 +86,26 @@ export const Auth = () => {
       }
       reset();
     } catch (error) {
-      console.error("Ошибка запроса:", error); // Выведем в консоль ошибку
-      toast({
-        title: "Ошибка",
-        description: error.response?.data?.message || "Что-то пошло не так.",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
+      console.error("Ошибка запроса:", error);
+
+      // Проверка на существующий аккаунт
+      if (error.response?.status === 409) {
+        toast({
+          title: "Ошибка регистрации",
+          description: "Пользователь с таким логином или email уже существует.",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      } else {
+        toast({
+          title: "Ошибка",
+          description: error.response?.data?.message || "Что-то пошло не так.",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
     } finally {
       setIsLoading(false);
     }
