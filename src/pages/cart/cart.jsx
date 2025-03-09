@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, Text, Image } from "@chakra-ui/react";
 import { useDispatch, useSelector } from "react-redux";
 import { removeFromCart, updateQuantity } from "../../redux/cartSlice";
 import { useNavigate } from "react-router-dom";
@@ -26,11 +26,37 @@ export const Cart = () => {
             <Flex
               key={item.id}
               p={4}
-              border="1px solid #ccc"
+              // border="1px solid #ccc"
               align="center"
               cursor="pointer"
               onClick={() => navigate(`/product/${item.id}`)} // Кликабельность товаров
             >
+              {/* Контейнер для фото */}
+              <Box
+                width="100px" // Фиксированная ширина фото
+                height="100px" // Фиксированная высота фото
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                overflow="hidden"
+                mr={4}
+              >
+                {item.photo ? (
+                  <Image
+                    src={`http://89.111.170.174:3000${item.photo}`}
+                    alt={item.name}
+                    maxW="100%"
+                    maxH="100%"
+                    objectFit="contain" // Обрезка и сохранение пропорций
+                  />
+                ) : (
+                  <Text fontSize="sm" color="gray.500">
+                    Нет фото
+                  </Text>
+                )}
+              </Box>
+
+              {/* Информация о товаре */}
               <Box flex="1">
                 <Text fontSize="lg">{item.name}</Text>
                 <Text>Цена: {item.price} р.</Text>
@@ -57,6 +83,8 @@ export const Cart = () => {
                   </Button>
                 </Flex>
               </Box>
+
+              {/* Удаление товара */}
               <Button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -69,7 +97,7 @@ export const Cart = () => {
           ))}
           <Box mt={4}>
             <Text fontSize="xl">Итого: {totalAmount} р.</Text>
-            <Button colorScheme="green" mt={2}>
+            <Button colorScheme="teal" mt={2}>
               Оформить заказ
             </Button>
           </Box>

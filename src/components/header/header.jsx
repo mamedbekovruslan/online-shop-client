@@ -27,30 +27,41 @@ export const Header = () => {
   };
 
   return (
-    <Flex w="100%" justifyContent="center" bg="#2E5077" padding={5}>
-      <Box w="30%" display="flex" justifyContent="space-between">
-        <Link to="/" style={{ color: "white" }}>
+    <Flex w="100%" justifyContent="center" bg="teal" padding={5}>
+      <Box display="flex" justifyContent="space-between">
+        <Link to="/" style={{ color: "white", marginRight: "10px" }}>
           Главная
         </Link>
-        <Link to="/manage-product" style={{ color: "white" }}>
-          Управление
-        </Link>
-        <Link to="/cart" style={{ color: "white" }}>
+        {isAdmin && (
+          <Link
+            to="/manage-product"
+            style={{ color: "white", marginRight: "10px" }}
+          >
+            Управление
+          </Link>
+        )}
+        <Link to="/cart" style={{ color: "white", marginRight: "10px" }}>
           Корзина
         </Link>
         {isAdmin && (
-          <Link to="/admin" style={{ color: "white" }}>
+          <Link to="/admin" style={{ color: "white", marginRight: "10px" }}>
             Админка
           </Link>
         )}
       </Box>
-      <Box position="absolute" right="5" display="flex" alignItems="center">
+      <Box
+        position="absolute"
+        top={username ? "3" : "5"}
+        right="5"
+        display="flex"
+        alignItems="center"
+      >
         {username ? (
           <>
             <Text color="white" mr={3}>
               {username}
             </Text>
-            <Button colorScheme="red" onClick={handleLogout}>
+            <Button colorScheme="transparent" onClick={handleLogout}>
               Выход
             </Button>
           </>

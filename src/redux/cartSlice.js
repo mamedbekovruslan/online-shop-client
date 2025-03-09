@@ -1,42 +1,53 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const initialState = {
-  items: [],
+// Функция для загрузки корзины из localStorage
+const loadCartFromStorage = () => {
+  const savedCart = localStorage.getItem("cart");
+  return savedCart ? JSON.parse(savedCart) : [];
 };
 
-export const cartSlice = createSlice({
+// Функция для сохранения корзины в localStorage
+const saveCartToStorage = (cart) => {
+  localStorage.setItem("cart", JSON.stringify(cart));
+};
+
+const cartSlice = createSlice({
   name: "cart",
-  initialState,
+  initialState: {
+    items: loadCartFromStorage(), // Загружаем корзину из localStorage при старте
+  },
   reducers: {
     addToCart: (state, action) => {
-      const existingItem = state.items.find(
+      const itemIndex = state.items.findIndex(
         (item) => item.id === action.payload.id
       );
-      if (existingItem) {
-        existingItem.quantity += 1;
+
+      if (itemIndex !== -1) {
+        state.items[itemIndex].quantity += 1; // Если товар уже в корзине, увеличиваем кол-во
       } else {
         state.items.push({ ...action.payload, quantity: 1 });
       }
+
+      saveCartToStorage(state.items); // Сохраняем корзину в localStorage
     },
     removeFromCart: (state, action) => {
       state.items = state.items.filter((item) => item.id !== action.payload);
+      saveCartToStorage(state.items); // Обновляем localStorage
     },
     updateQuantity: (state, action) => {
-      const { id, change } = action.payload;
-      const item = state.items.find((item) => item.id === id);
-      if (item) {
-        item.quantity += change;
-        if (item.quantity <= 0) {
-          state.items = state.items.filter((item) => item.id !== id);
+      const itemIndex = state.items.findIndex(
+        (item) => item.id === action.payload.id
+      );
+      if (itemIndex !== -1) {
+        state.items[itemIndex].quantity += action.payload.change;
+        if (state.items[itemIndex].quantity < 1) {
+          state.items.splice(itemIndex, 1); // Удаляем товар, если количество стало 0
         }
       }
-    },
-    clearCart: (state) => {
-      state.items = [];
+      saveCartToStorage(state.items); // Обновляем localStorage
     },
   },
 });
 
-export const { addToCart, removeFromCart, updateQuantity, clearCart } =
-  cartSlice.actions;
+export const { addToCart, removeFromCart, updateQuantity } = cartSlice.actions;
 export default cartSlice.reducer;

@@ -275,7 +275,7 @@ export const ManageProduct = () => {
             <FormLabel>Фото</FormLabel>
             <Input type="file" accept="image/*" onChange={handleImageChange} />
           </FormControl>
-          <Button colorScheme="blue" onClick={handleSaveProduct}>
+          <Button colorScheme="teal" onClick={handleSaveProduct}>
             {isEditing ? "Сохранить изменения" : "Добавить товар"}
           </Button>
         </Flex>
@@ -370,7 +370,7 @@ export const ManageProduct = () => {
                       <IconButton
                         aria-label="Редактировать"
                         icon={<AiOutlineEdit />}
-                        colorScheme="blue"
+                        colorScheme="gray"
                         size="sm"
                         mr={2}
                         onClick={() => handleEditProduct(product)}

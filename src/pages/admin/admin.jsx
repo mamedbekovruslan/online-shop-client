@@ -140,7 +140,7 @@ export const Admin = () => {
       </Text>
 
       <Flex justifyContent="space-between">
-        <Box p={4} border="1px solid #ccc" borderRadius="md" mb={4} w="20%">
+        <Box p={4} borderRadius="md" mb={4} w="20%">
           <Text fontSize="l" mb={2}>
             Добавить пользователя
           </Text>
@@ -169,7 +169,7 @@ export const Admin = () => {
               <option value="moder">moder</option>
               <option value="user">user</option>
             </Select>
-            <Button colorScheme="green" onClick={handleAddUser}>
+            <Button colorScheme="teal" onClick={handleAddUser}>
               Добавить
             </Button>
           </VStack>
@@ -251,7 +251,7 @@ export const Admin = () => {
                       </Button>
                     ) : (
                       <Button
-                        colorScheme="blue"
+                        colorScheme="gray"
                         onClick={() => setEditingUser(user.id)}
                       >
                         Редактировать

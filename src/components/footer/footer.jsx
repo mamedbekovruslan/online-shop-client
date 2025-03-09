@@ -5,7 +5,7 @@ export const Footer = () => {
     <Flex
       w="100%"
       justifyContent="center"
-      bg="#2E5077"
+      bg="teal"
       padding={5}
       color="white"
       pos="absolute"
