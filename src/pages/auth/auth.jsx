@@ -92,7 +92,7 @@ export const Auth = () => {
   return (
     <Box
       width="sm"
-      mt="50%"
+      mt="17%"
       mx="auto"
       p="6"
       borderWidth="1px"
