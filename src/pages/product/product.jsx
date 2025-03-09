@@ -1,22 +1,37 @@
 import { Box, Button, Flex, Image, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
-import { getProduct } from "../../api/auth";
+import { useParams, useNavigate } from "react-router-dom";
+import { getProduct, getProducts } from "../../api/auth";
 import { addToCart, updateQuantity } from "../../redux/cartSlice";
 
 export const Product = () => {
-  const { id } = useParams(); // Получаем id товара из URL
+  const { id } = useParams();
   const dispatch = useDispatch();
-  const cartItems = useSelector((state) => state.cart.items); // Данные корзины
+  const navigate = useNavigate();
+  const cartItems = useSelector((state) => state.cart.items);
+
   const [product, setProduct] = useState(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
+        setLoading(true); // Показываем загрузку при изменении товара
+        setRelatedProducts([]); // Очищаем список связанных товаров перед загрузкой
+
         const response = await getProduct(id);
         setProduct(response.data);
+
+        // Загружаем товары из той же категории
+        const relatedResponse = await getProducts({
+          category_id: response.data.category_id,
+        });
+
+        setRelatedProducts(
+          relatedResponse.data.filter((item) => item.id !== response.data.id)
+        );
       } catch (err) {
         console.error("Ошибка при загрузке товара:", err);
       } finally {
@@ -25,7 +40,7 @@ export const Product = () => {
     };
 
     fetchProduct();
-  }, [id]);
+  }, [id]); // Теперь useEffect срабатывает при каждом изменении id
 
   if (loading) {
     return <Text>Загрузка...</Text>;
@@ -35,7 +50,6 @@ export const Product = () => {
     return <Text>Товар не найден</Text>;
   }
 
-  // Проверяем, есть ли товар в корзине
   const cartItem = cartItems.find((item) => item.id === product.id);
 
   return (
@@ -44,10 +58,8 @@ export const Product = () => {
       <Image
         src={`http://89.111.170.174:3000${product.photo}`}
         alt={product.name}
-        boxSize="300px"
+        boxSize="250px"
         objectFit="contain"
-        // border="1px solid #ddd"
-        // boxShadow="md"
         mb={4}
       />
 
@@ -56,7 +68,6 @@ export const Product = () => {
       <Text fontSize="lg">Цена: {product.price} р.</Text>
       <Text>Кол-во на складе: {product.quantity} шт.</Text>
 
-      {/* Если товар уже в корзине, показываем + и - */}
       {cartItem ? (
         <Flex align="center" justify="center" mt={4}>
           <Button
@@ -86,6 +97,53 @@ export const Product = () => {
         >
           Купить
         </Button>
+      )}
+
+      {/* Товары из той же категории */}
+      {relatedProducts.length > 0 && (
+        <Box w="100%" mt={4}>
+          <Text fontSize="xl" mb={4}>
+            Товары из той же категории
+          </Text>
+          <Box
+            overflowX="auto"
+            whiteSpace="nowrap"
+            css={{
+              "&::-webkit-scrollbar": { height: "5px" },
+              "&::-webkit-scrollbar-thumb": {
+                background: "#888",
+                borderRadius: "5px",
+              },
+              scrollbarWidth: "thin",
+            }}
+          >
+            {relatedProducts.map((relatedProduct) => (
+              <Box
+                key={relatedProduct.id}
+                display="inline-block"
+                minWidth="200px"
+                maxWidth="200px"
+                borderRadius="8px"
+                p={3}
+                m={2}
+                cursor="pointer"
+                textAlign="center"
+                onClick={() => navigate(`/product/${relatedProduct.id}`)}
+              >
+                <Image
+                  src={`http://89.111.170.174:3000${relatedProduct.photo}`}
+                  alt={relatedProduct.name}
+                  boxSize="150px"
+                  objectFit="contain"
+                  m="auto"
+                  mb={2}
+                />
+                <Text fontSize="sm">{relatedProduct.name}</Text>
+                <Text fontSize="sm">Цена: {relatedProduct.price} р.</Text>
+              </Box>
+            ))}
+          </Box>
+        </Box>
       )}
     </Flex>
   );
