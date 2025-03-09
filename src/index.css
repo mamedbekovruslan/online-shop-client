@@ -3,3 +3,7 @@ body {
   margin: 0;
   box-sizing: border-box;
 }
+
+th:hover {
+  cursor: pointer
+}

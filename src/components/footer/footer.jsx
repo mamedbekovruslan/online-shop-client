@@ -11,7 +11,7 @@ export const Footer = () => {
       pos="absolute"
       bottom={0}
     >
-      Footer
+      Интернет магазин
     </Flex>
   );
 };
