@@ -75,6 +75,17 @@ export const ManageProduct = () => {
       try {
         const response = await getCategories();
         setCategories(response.data);
+
+        // Найти категорию "Смартфоны" и установить её ID по умолчанию
+        const defaultCategory = response.data.find(
+          (cat) => cat.name.toLowerCase() === "смартфоны"
+        );
+        if (defaultCategory) {
+          setNewProduct((prev) => ({
+            ...prev,
+            category_id: defaultCategory.id,
+          }));
+        }
       } catch (err) {
         console.error("Error fetching categories:", err);
       }
@@ -178,12 +189,16 @@ export const ManageProduct = () => {
 
       if (imageFile) {
         console.log("Файл для загрузки:", imageFile.name);
-        formData.append("photo", imageFile, imageFile.name); // <-- добавляем правильное имя файла
+        formData.append("photo", imageFile, imageFile.name);
       }
 
       if (isEditing) {
-        // ✅ Используем PATCH вместо PUT
-        await patchProduct(selectedProductId, formData);
+        const response = await patchProduct(selectedProductId, formData);
+        setProducts((prevProducts) =>
+          prevProducts.map((product) =>
+            product.id === selectedProductId ? response.data : product
+          )
+        );
       } else {
         const response = await addProduct(formData);
         setProducts([...products, response.data]);
