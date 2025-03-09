@@ -12,6 +12,18 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
+// Загрузка фото
+export const uploadPhoto = async (file) => {
+  const formData = new FormData();
+  formData.append("photo", file);
+
+  const response = await API.post("/upload", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
+  return response.data.filePath;
+};
+
 // Аутентификация
 export const register = (data) => API.post("/register", data);
 export const login = (data) => API.post("/login", data);
@@ -20,10 +32,27 @@ export const login = (data) => API.post("/login", data);
 export const getCategories = () => API.get("/categories");
 export const getProducts = (params) => API.get("/products", { params });
 export const deleteProduct = (id) => API.delete(`/products/${id}`);
-export const addProduct = (data) => API.post("/products", data);
 export const getProduct = (id) => API.get(`/products/${id}`);
-export const updateProduct = (id, data) => API.put(`/products/${id}`, data);
-export const patchProduct = (id, data) => API.patch(`/products/${id}`, data);
+
+export const addProduct = async (data) => {
+  if (data.photo instanceof File) {
+    data.photo = await uploadPhoto(data.photo);
+  }
+  return API.post("/products", data);
+};
+export const updateProduct = async (id, data) => {
+  if (data.photo instanceof File) {
+    data.photo = await uploadPhoto(data.photo);
+  }
+  return API.put(`/products/${id}`, data);
+};
+export const patchProduct = (id, data) =>
+  API.patch(`/products/${id}`, data, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
 export const placeOrder = (orderData) => API.post("/order", orderData);
 
 // Пользователи

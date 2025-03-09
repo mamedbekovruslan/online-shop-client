@@ -27,6 +27,7 @@ import {
   AiOutlineArrowDown,
   AiOutlineSave,
   AiOutlineDelete,
+  AiOutlineEdit,
 } from "react-icons/ai"; // Иконки сортировки
 import { useState, useEffect } from "react";
 import {
@@ -176,10 +177,11 @@ export const ManageProduct = () => {
       formData.append("quantity", newProduct.quantity);
 
       if (imageFile) {
-        formData.append("photo", imageFile); // Добавляем файл
+        formData.append("photo", imageFile);
       }
 
       if (isEditing) {
+        // ✅ Используем PATCH вместо PUT
         await patchProduct(selectedProductId, formData);
       } else {
         const response = await addProduct(formData);
@@ -194,6 +196,7 @@ export const ManageProduct = () => {
         photo: "",
       });
       setImageFile(null);
+      setIsEditing(false);
     } catch (err) {
       console.error("Ошибка сохранения товара:", err);
       alert("Ошибка при сохранении товара");
@@ -336,20 +339,26 @@ export const ManageProduct = () => {
                     <Th>{getCategoryNameById(product.category_id)}</Th>
                     <Th>{product.price} р</Th>
                     <Th>{product.quantity} шт</Th>
-                    <Th w="100px" maxW="100px" overflow="hidden">
-                      {product.photo}
+                    <Th>
+                      {product.photo ? (
+                        <img
+                          src={`http://89.111.170.174:3000${product.photo}`}
+                          alt="Фото"
+                          width="50"
+                        />
+                      ) : (
+                        "Нет фото"
+                      )}
                     </Th>
                     <Th>
-                      {/* Иконка "Сохранить изменения" */}
                       <IconButton
-                        aria-label="Сохранить"
-                        icon={<AiOutlineSave />}
-                        colorScheme="green"
+                        aria-label="Редактировать"
+                        icon={<AiOutlineEdit />}
+                        colorScheme="blue"
                         size="sm"
                         mr={2}
-                        onClick={() => handleSaveProduct(product)}
+                        onClick={() => handleEditProduct(product)}
                       />
-                      {/* Иконка "Удалить товар" */}
                       <IconButton
                         aria-label="Удалить"
                         icon={<AiOutlineDelete />}
