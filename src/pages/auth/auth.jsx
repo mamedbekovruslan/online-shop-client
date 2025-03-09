@@ -12,7 +12,7 @@ import {
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { login } from "../../api/auth";
+import { login, register as registerUser } from "../../api/auth";
 
 const loginSchema = yup.object({
   username: yup.string().required("Логин обязателен"),
@@ -25,6 +25,7 @@ const loginSchema = yup.object({
 const registerSchema = yup.object({
   name: yup.string().required("Имя обязательно"),
   username: yup.string().required("Логин обязателен"),
+  email: yup.string().email("Неверный email").required("Email обязателен"),
   password: yup
     .string()
     .min(6, "Пароль должен быть не менее 6 символов")
@@ -47,9 +48,15 @@ export const Auth = () => {
 
   const onSubmit = async (data) => {
     setIsLoading(true);
+
     try {
       if (isRegistering) {
-        const response = await register(data);
+        console.log("Submitting data:", data);
+        console.log("Registering user...");
+
+        const response = await registerUser(data);
+        console.log("Response:", response);
+
         toast({
           title: "Регистрация успешна",
           description:
@@ -59,7 +66,9 @@ export const Auth = () => {
           isClosable: true,
         });
       } else {
+        console.log("Logging in...");
         const response = await login(data);
+        console.log("Response:", response);
 
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("username", response.data.username);
@@ -77,6 +86,7 @@ export const Auth = () => {
       }
       reset();
     } catch (error) {
+      console.error("Ошибка запроса:", error); // Выведем в консоль ошибку
       toast({
         title: "Ошибка",
         description: error.response?.data?.message || "Что-то пошло не так.",
@@ -107,6 +117,16 @@ export const Auth = () => {
               <Input {...register("name")} placeholder="Введите ваше имя" />
               <Text color="red.500" fontSize="sm">
                 {errors.name?.message}
+              </Text>
+            </FormControl>
+          )}
+
+          {isRegistering && (
+            <FormControl isInvalid={errors.email}>
+              <FormLabel>Email</FormLabel>
+              <Input {...register("email")} placeholder="Введите ваш email" />
+              <Text color="red.500" fontSize="sm">
+                {errors.email?.message}
               </Text>
             </FormControl>
           )}
