@@ -12,7 +12,6 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
-// Загрузка фото
 export const uploadPhoto = async (file) => {
   const formData = new FormData();
   formData.append("photo", file);
@@ -24,11 +23,9 @@ export const uploadPhoto = async (file) => {
   return response.data.filePath;
 };
 
-// Аутентификация
 export const register = (data) => API.post("/register", data);
 export const login = (data) => API.post("/login", data);
 
-// Категории и товары
 export const getCategories = () => API.get("/categories");
 export const getProducts = (params) => API.get("/products", { params });
 export const deleteProduct = (id) => API.delete(`/products/${id}`);
@@ -54,8 +51,9 @@ export const patchProduct = (id, data) =>
   });
 
 export const placeOrder = (orderData) => API.post("/order", orderData);
+export const getOrder = () => API.get("/orders");
+export const getAllOrders = () => API.get("/orders/all");
 
-// Пользователи
 export const getUsers = () => API.get("/users");
 export const deleteUser = (id) => API.delete(`/users/${id}`);
 export const updateUser = (id, data) => API.put(`/users/${id}`, data);

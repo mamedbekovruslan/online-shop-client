@@ -1,6 +1,4 @@
 import {
-  Box,
-  Button,
   Flex,
   IconButton,
   Menu,
@@ -50,7 +48,6 @@ export const Header = () => {
       p={4}
       position="relative"
     >
-      {/* Навигация */}
       {isMobile ? (
         <Menu>
           <MenuButton
@@ -127,10 +124,32 @@ export const Header = () => {
               </Badge>
             </Link>
           )}
+          {isAdmin ? (
+            <Link to="/all-orders">
+              <Badge
+                colorScheme="whiteAlpha"
+                variant="solid"
+                p={1}
+                borderRadius="4px"
+              >
+                Заказы клиентов
+              </Badge>
+            </Link>
+          ) : (
+            <Link to="/orders">
+              <Badge
+                colorScheme="whiteAlpha"
+                variant="solid"
+                p={1}
+                borderRadius="4px"
+              >
+                Мои заказы
+              </Badge>
+            </Link>
+          )}
         </Flex>
       )}
 
-      {/* Вход/Выход */}
       <Flex
         align="center"
         position={isMobile ? "unset" : "absolute"}
