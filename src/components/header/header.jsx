@@ -71,9 +71,19 @@ export const Header = () => {
             <MenuItem as={Link} to="/cart">
               Корзина
             </MenuItem>
+            {!isAdmin && (
+              <MenuItem as={Link} to="/orders">
+                Мои заказы
+              </MenuItem>
+            )}
             {isAdmin && (
               <MenuItem as={Link} to="/admin">
                 Админка
+              </MenuItem>
+            )}
+            {isAdmin && (
+              <MenuItem as={Link} to="/all-orders">
+                Заказы клиентов
               </MenuItem>
             )}
           </MenuList>
