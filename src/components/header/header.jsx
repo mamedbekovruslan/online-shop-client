@@ -1,19 +1,34 @@
-import { Box, Button, Flex, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Flex,
+  IconButton,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  Text,
+  useBreakpointValue,
+  Badge,
+} from "@chakra-ui/react";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { HamburgerIcon, UnlockIcon } from "@chakra-ui/icons";
+import { FiLogOut } from "react-icons/fi";
 
 export const Header = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const isMobile = useBreakpointValue({ base: true, md: false });
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
-    const role = localStorage.getItem("role"); // Получаем роль пользователя
+    const role = localStorage.getItem("role");
 
     if (storedUsername) {
       setUsername(storedUsername);
-      setIsAdmin(role === "admin"); // Проверяем, является ли пользователь админом
+      setIsAdmin(role === "admin");
     }
   }, []);
 
@@ -27,50 +42,128 @@ export const Header = () => {
   };
 
   return (
-    <Flex w="100%" justifyContent="center" bg="teal" padding={5}>
-      <Box display="flex" justifyContent="space-between">
-        <Link to="/" style={{ color: "white", marginRight: "10px" }}>
-          Главная
-        </Link>
-        {isAdmin && (
-          <Link
-            to="/manage-product"
-            style={{ color: "white", marginRight: "10px" }}
-          >
-            Управление
+    <Flex
+      w="100%"
+      justifyContent={isMobile ? "space-between" : "center"}
+      alignItems="center"
+      bg="teal"
+      p={4}
+      position="relative"
+    >
+      {/* Навигация */}
+      {isMobile ? (
+        <Menu>
+          <MenuButton
+            as={IconButton}
+            icon={<HamburgerIcon />}
+            borderWidth={2}
+            borderColor="white"
+            color="white"
+            colorScheme="whiteAlpha"
+            variant="outline"
+          />
+          <MenuList>
+            <MenuItem as={Link} to="/">
+              Главная
+            </MenuItem>
+            {isAdmin && (
+              <MenuItem as={Link} to="/manage-product">
+                Управление
+              </MenuItem>
+            )}
+            <MenuItem as={Link} to="/cart">
+              Корзина
+            </MenuItem>
+            {isAdmin && (
+              <MenuItem as={Link} to="/admin">
+                Админка
+              </MenuItem>
+            )}
+          </MenuList>
+        </Menu>
+      ) : (
+        <Flex gap={4} align="center">
+          <Link to="/">
+            <Badge
+              colorScheme="whiteAlpha"
+              variant="solid"
+              p={1}
+              borderRadius="4px"
+            >
+              Главная
+            </Badge>
           </Link>
-        )}
-        <Link to="/cart" style={{ color: "white", marginRight: "10px" }}>
-          Корзина
-        </Link>
-        {isAdmin && (
-          <Link to="/admin" style={{ color: "white", marginRight: "10px" }}>
-            Админка
+          {isAdmin && (
+            <Link to="/manage-product">
+              <Badge
+                colorScheme="whiteAlpha"
+                variant="solid"
+                p={1}
+                borderRadius="4px"
+              >
+                Управление
+              </Badge>
+            </Link>
+          )}
+          <Link to="/cart">
+            <Badge
+              colorScheme="whiteAlpha"
+              variant="solid"
+              p={1}
+              borderRadius="4px"
+            >
+              Корзина
+            </Badge>
           </Link>
-        )}
-      </Box>
-      <Box
-        position="absolute"
-        top={username ? "3" : "5"}
-        right="5"
-        display="flex"
-        alignItems="center"
+          {isAdmin && (
+            <Link to="/admin">
+              <Badge
+                colorScheme="whiteAlpha"
+                variant="solid"
+                p={1}
+                borderRadius="4px"
+              >
+                Админка
+              </Badge>
+            </Link>
+          )}
+        </Flex>
+      )}
+
+      {/* Вход/Выход */}
+      <Flex
+        align="center"
+        position={isMobile ? "unset" : "absolute"}
+        right="20px"
       >
         {username ? (
           <>
-            <Text color="white" mr={3}>
+            <Text color="white" fontWeight="bold" mr={3}>
               {username}
             </Text>
-            <Button colorScheme="transparent" onClick={handleLogout}>
-              Выход
-            </Button>
+
+            <IconButton
+              icon={<FiLogOut />}
+              fontSize="25px"
+              _hover={{ background: "transparent" }}
+              aria-label="Выход"
+              variant="ghost"
+              color="white"
+              onClick={handleLogout}
+            />
           </>
         ) : (
-          <Link to="/auth" style={{ color: "white" }}>
-            Вход
-          </Link>
+          <IconButton
+            icon={<UnlockIcon />}
+            fontSize="25px"
+            _hover={{ background: "transparent" }}
+            aria-label="Вход"
+            variant="ghost"
+            color="white"
+            onClick={() => navigate("/auth")}
+          />
         )}
-      </Box>
+      </Flex>
     </Flex>
   );
 };

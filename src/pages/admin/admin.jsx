@@ -20,9 +20,19 @@ import {
   Text,
   VStack,
   Flex,
+  IconButton,
+  useBreakpointValue,
+  Skeleton,
 } from "@chakra-ui/react";
 import { deleteUser, getUsers, updateUser, addUser } from "../../api/auth";
-import { AiOutlineArrowDown, AiOutlineArrowUp } from "react-icons/ai";
+import {
+  AiOutlineArrowDown,
+  AiOutlineArrowUp,
+  AiOutlineClose,
+  AiOutlineDelete,
+  AiOutlineEdit,
+  AiOutlineSave,
+} from "react-icons/ai";
 
 export const Admin = () => {
   const [users, setUsers] = useState([]);
@@ -32,6 +42,9 @@ export const Admin = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [searchUsername, setSearchUsername] = useState(""); // Поиск по username
   const [sortOrder, setSortOrder] = useState("asc");
+  const [isLoading, setIsLoading] = useState(true);
+
+  const isMobile = useBreakpointValue({ base: true, md: false });
 
   // Состояние для нового пользователя
   const [newUser, setNewUser] = useState({
@@ -47,11 +60,14 @@ export const Admin = () => {
 
   const fetchUsers = async () => {
     try {
+      setIsLoading(true);
       const response = await getUsers();
       setUsers(response.data);
       setFilteredUsers(response.data);
     } catch (error) {
       console.error("Ошибка загрузки пользователей:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -139,12 +155,23 @@ export const Admin = () => {
         Управление учетными записями
       </Text>
 
-      <Flex justifyContent="space-between">
-        <Box p={4} borderRadius="md" mb={4} w="20%">
-          <Text fontSize="l" mb={2}>
+      <Flex
+        direction={{ base: "column", lg: "row" }}
+        justify="space-between"
+        align="flex-start"
+        gap={6}
+      >
+        {/* Форма добавления */}
+        <Box
+          p={4}
+          borderRadius="md"
+          w={{ base: "100%", lg: "25%" }}
+          border="1px solid #e2e8f0"
+        >
+          <Text fontSize="lg" mb={2}>
             Добавить пользователя
           </Text>
-          <VStack spacing={2} align="stretch">
+          <VStack spacing={3} align="stretch">
             <Input
               placeholder="Имя пользователя"
               value={newUser.username}
@@ -175,106 +202,163 @@ export const Admin = () => {
           </VStack>
         </Box>
 
-        <Box w="78%">
+        {/* Таблица */}
+        <Box w={{ base: "100%", lg: "75%" }}>
           <Input
             placeholder="Поиск по username..."
             value={searchUsername}
             onChange={(e) => setSearchUsername(e.target.value)}
             mb={4}
           />
-          <Table variant="simple">
-            <Thead>
-              <Tr>
-                <Th onClick={handleSort}>
-                  Имя пользователя{" "}
-                  {sortOrder === "asc" ? (
-                    <AiOutlineArrowUp />
-                  ) : (
-                    <AiOutlineArrowDown />
-                  )}
-                </Th>
-                <Th>Email</Th>
-                <Th>Роль</Th>
-                <Th>Действия</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {filteredUsers.map((user) => (
-                <Tr key={user.id}>
-                  <Td>
-                    {editingUser === user.id ? (
-                      <Input
-                        value={user.username}
-                        onChange={(e) =>
-                          handleInputChange(user.id, "username", e.target.value)
-                        }
-                      />
+
+          <Box overflowX="auto">
+            <Table variant="simple" size="sm">
+              <Thead>
+                <Tr>
+                  <Th onClick={handleSort} cursor="pointer">
+                    Имя пользователя{" "}
+                    {sortOrder === "asc" ? (
+                      <AiOutlineArrowUp />
                     ) : (
-                      user.username
+                      <AiOutlineArrowDown />
                     )}
-                  </Td>
-                  <Td>
-                    {editingUser === user.id ? (
-                      <Input
-                        value={user.email}
-                        onChange={(e) =>
-                          handleInputChange(user.id, "email", e.target.value)
-                        }
-                      />
-                    ) : (
-                      user.email
-                    )}
-                  </Td>
-                  <Td>
-                    {editingUser === user.id ? (
-                      <Select
-                        value={user.role}
-                        onChange={(e) =>
-                          handleInputChange(user.id, "role", e.target.value)
-                        }
-                      >
-                        <option value="admin">admin</option>
-                        <option value="moder">moder</option>
-                        <option value="user">user</option>
-                      </Select>
-                    ) : (
-                      user.role
-                    )}
-                  </Td>
-                  <Td>
-                    {editingUser === user.id ? (
-                      <Button
-                        colorScheme="green"
-                        onClick={() => handleUpdateUser(user.id)}
-                      >
-                        Сохранить
-                      </Button>
-                    ) : (
-                      <Button
-                        colorScheme="gray"
-                        onClick={() => setEditingUser(user.id)}
-                      >
-                        Редактировать
-                      </Button>
-                    )}
-                    <Button
-                      colorScheme="red"
-                      ml={2}
-                      onClick={() => {
-                        setDeleteUserId(user.id);
-                        onOpen();
-                      }}
-                    >
-                      Удалить
-                    </Button>
-                  </Td>
+                  </Th>
+                  <Th>Email</Th>
+                  <Th>Роль</Th>
+                  <Th>Действия</Th>
                 </Tr>
-              ))}
-            </Tbody>
-          </Table>
+              </Thead>
+              <Tbody>
+                {isLoading
+                  ? Array(5)
+                      .fill(null)
+                      .map((_, index) => (
+                        <Tr key={index}>
+                          <Td>
+                            <Skeleton height="20px" />
+                          </Td>
+                          <Td>
+                            <Skeleton height="20px" />
+                          </Td>
+                          <Td>
+                            <Skeleton height="20px" />
+                          </Td>
+                          <Td>
+                            <Skeleton height="32px" width="70px" />
+                          </Td>
+                        </Tr>
+                      ))
+                  : filteredUsers.map((user) => (
+                      <Tr key={user.id}>
+                        <Td>
+                          {editingUser === user.id ? (
+                            <Input
+                              value={user.username}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  user.id,
+                                  "username",
+                                  e.target.value
+                                )
+                              }
+                              size="sm"
+                              width={isMobile ? "200px" : "unset"}
+                            />
+                          ) : (
+                            user.username
+                          )}
+                        </Td>
+                        <Td>
+                          {editingUser === user.id ? (
+                            <Input
+                              value={user.email}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  user.id,
+                                  "email",
+                                  e.target.value
+                                )
+                              }
+                              size="sm"
+                              width={isMobile ? "200px" : "unset"}
+                            />
+                          ) : (
+                            user.email
+                          )}
+                        </Td>
+                        <Td>
+                          {editingUser === user.id ? (
+                            <Select
+                              value={user.role}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  user.id,
+                                  "role",
+                                  e.target.value
+                                )
+                              }
+                              size="sm"
+                              width={isMobile ? "100px" : "unset"}
+                            >
+                              <option value="admin">admin</option>
+                              <option value="moder">moder</option>
+                              <option value="user">user</option>
+                            </Select>
+                          ) : (
+                            user.role
+                          )}
+                        </Td>
+                        <Td>
+                          {editingUser === user.id ? (
+                            <>
+                              <IconButton
+                                icon={<AiOutlineSave />}
+                                aria-label="Сохранить"
+                                colorScheme="green"
+                                size="sm"
+                                onClick={() => handleUpdateUser(user.id)}
+                                mr={isMobile ? 1 : 2}
+                              />
+                              <IconButton
+                                icon={<AiOutlineClose />}
+                                aria-label="Отмена"
+                                colorScheme="red"
+                                size="sm"
+                                onClick={() => setEditingUser(null)}
+                              />
+                            </>
+                          ) : (
+                            <>
+                              <IconButton
+                                icon={<AiOutlineEdit />}
+                                aria-label="Редактировать"
+                                onClick={() => setEditingUser(user.id)}
+                                size="sm"
+                                colorScheme="blue"
+                                mr={isMobile ? 1 : 2}
+                              />
+                              <IconButton
+                                icon={<AiOutlineDelete />}
+                                aria-label="Удалить"
+                                onClick={() => {
+                                  setDeleteUserId(user.id);
+                                  onOpen();
+                                }}
+                                size="sm"
+                                colorScheme="red"
+                              />
+                            </>
+                          )}
+                        </Td>
+                      </Tr>
+                    ))}
+              </Tbody>
+            </Table>
+          </Box>
         </Box>
       </Flex>
 
+      {/* Модальное окно */}
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>

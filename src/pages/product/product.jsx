@@ -72,6 +72,7 @@ export const Product = () => {
         <Flex align="center" justify="center" mt={4}>
           <Button
             size="sm"
+            padding="20px 10px"
             onClick={() =>
               dispatch(updateQuantity({ id: product.id, change: -1 }))
             }
@@ -79,9 +80,10 @@ export const Product = () => {
           >
             ➖
           </Button>
-          <Text mx={2}>{cartItem.quantity}</Text>
+          <Text mx={5}>{cartItem.quantity}</Text>
           <Button
             size="sm"
+            padding="20px 10px"
             onClick={() =>
               dispatch(updateQuantity({ id: product.id, change: 1 }))
             }

@@ -21,21 +21,24 @@ import {
   Box,
   IconButton,
   Text,
+  useBreakpointValue,
+  VStack,
+  Spinner,
+  Skeleton,
 } from "@chakra-ui/react";
 import {
   AiOutlineArrowUp,
   AiOutlineArrowDown,
-  AiOutlineSave,
   AiOutlineDelete,
   AiOutlineEdit,
-} from "react-icons/ai"; // Иконки сортировки
+  AiOutlineUpload,
+} from "react-icons/ai";
 import { useState, useEffect } from "react";
 import {
   addProduct,
   deleteProduct,
   getCategories,
   getProducts,
-  updateProduct,
   patchProduct,
 } from "../../api/auth";
 
@@ -45,13 +48,15 @@ export const ManageProduct = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [categories, setCategories] = useState([]);
-
   const [isEditing, setIsEditing] = useState(false);
   const [sortColumn, setSortColumn] = useState(null);
   const [sortOrder, setSortOrder] = useState("asc");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [imageFile, setImageFile] = useState(null);
+  const [loadingProducts, setLoadingProdutcts] = useState(false);
+
+  const isMobile = useBreakpointValue({ base: true, md: false });
 
   const [newProduct, setNewProduct] = useState({
     name: "",
@@ -63,11 +68,14 @@ export const ManageProduct = () => {
 
   useEffect(() => {
     const fetchProducts = async () => {
+      setLoadingProdutcts(true);
       try {
         const response = await getProducts();
         setProducts(response.data);
       } catch (err) {
         console.error("Error fetching products:", err);
+      } finally {
+        setLoadingProdutcts(false);
       }
     };
 
@@ -75,8 +83,6 @@ export const ManageProduct = () => {
       try {
         const response = await getCategories();
         setCategories(response.data);
-
-        // Найти категорию "Смартфоны" и установить её ID по умолчанию
         const defaultCategory = response.data.find(
           (cat) => cat.name.toLowerCase() === "смартфоны"
         );
@@ -95,7 +101,6 @@ export const ManageProduct = () => {
     fetchCategories();
   }, []);
 
-  // Фильтрация товаров
   useEffect(() => {
     let filtered = products;
 
@@ -114,7 +119,6 @@ export const ManageProduct = () => {
     setFilteredProducts(filtered);
   }, [searchQuery, selectedCategory, products]);
 
-  // Сортировка товаров
   const handleSort = (column) => {
     const order = sortColumn === column && sortOrder === "asc" ? "desc" : "asc";
     setSortColumn(column);
@@ -129,7 +133,6 @@ export const ManageProduct = () => {
     setFilteredProducts(sortedProducts);
   };
 
-  // Удаление товара
   const handleDeleteProduct = (id) => {
     setSelectedProductId(id);
     onOpen();
@@ -186,9 +189,7 @@ export const ManageProduct = () => {
       formData.append("category_id", newProduct.category_id);
       formData.append("price", newProduct.price);
       formData.append("quantity", newProduct.quantity);
-
       if (imageFile) {
-        console.log("Файл для загрузки:", imageFile.name);
         formData.append("photo", imageFile, imageFile.name);
       }
 
@@ -226,12 +227,13 @@ export const ManageProduct = () => {
 
   return (
     <Flex direction="column">
-      <Text fontSize="2xl" mb={4}>
+      <Text fontSize="2xl" mb={4} textAlign={{ base: "center", md: "left" }}>
         {isEditing ? "Редактирование товара" : "Добавление товара"}
       </Text>
-      <Box display="flex" justifyContent="space-between">
-        <Flex direction="column" mb={8} w="20%">
-          <FormControl id="name" mb={4}>
+
+      <Flex direction={{ base: "column", lg: "row" }} gap={6}>
+        <VStack spacing={4} w={{ base: "100%", lg: "25%" }}>
+          <FormControl id="name">
             <FormLabel>Название товара</FormLabel>
             <Input
               name="name"
@@ -239,7 +241,7 @@ export const ManageProduct = () => {
               onChange={handleInputChange}
             />
           </FormControl>
-          <FormControl id="category" mb={4}>
+          <FormControl id="category">
             <FormLabel>Категория</FormLabel>
             <Select
               name="category_id"
@@ -253,7 +255,7 @@ export const ManageProduct = () => {
               ))}
             </Select>
           </FormControl>
-          <FormControl id="price" mb={4}>
+          <FormControl id="price">
             <FormLabel>Цена</FormLabel>
             <Input
               name="price"
@@ -262,7 +264,7 @@ export const ManageProduct = () => {
               onChange={handleInputChange}
             />
           </FormControl>
-          <FormControl id="quantity" mb={4}>
+          <FormControl id="quantity">
             <FormLabel>Количество</FormLabel>
             <Input
               name="quantity"
@@ -271,17 +273,39 @@ export const ManageProduct = () => {
               onChange={handleInputChange}
             />
           </FormControl>
-          <FormControl id="image" mb={4}>
+          <FormControl id="image">
             <FormLabel>Фото</FormLabel>
-            <Input type="file" accept="image/*" onChange={handleImageChange} />
+            <Button
+              as="label"
+              htmlFor="file-upload"
+              cursor="pointer"
+              leftIcon={<AiOutlineUpload />}
+              colorScheme="teal"
+              variant="outline"
+              width="100%"
+            >
+              Загрузить фото
+            </Button>
+            <Input
+              id="file-upload"
+              type="file"
+              accept="image/*"
+              display="none"
+              onChange={handleImageChange}
+            />
+            {imageFile && (
+              <Text fontSize="sm" mt={2}>
+                Выбран файл: {imageFile.name}
+              </Text>
+            )}
           </FormControl>
-          <Button colorScheme="teal" onClick={handleSaveProduct}>
+          <Button colorScheme="teal" onClick={handleSaveProduct} w="100%">
             {isEditing ? "Сохранить изменения" : "Добавить товар"}
           </Button>
-        </Flex>
+        </VStack>
 
-        <Box w="78%">
-          <Flex mt={8} mb={4} gap={4}>
+        <Box w={{ base: "100%", lg: "75%" }}>
+          <Flex mb={4} gap={4} direction={{ base: "column", md: "row" }}>
             <Input
               placeholder="Поиск по наименованию..."
               value={searchQuery}
@@ -301,7 +325,7 @@ export const ManageProduct = () => {
           </Flex>
 
           <TableContainer>
-            <Table variant="simple">
+            <Table size="sm" variant="simple">
               <Thead>
                 <Tr>
                   <Th onClick={() => handleSort("id")}>
@@ -348,58 +372,87 @@ export const ManageProduct = () => {
                 </Tr>
               </Thead>
               <Tbody>
-                {filteredProducts.map((product) => (
-                  <Tr key={product.id}>
-                    <Th>{product.id}</Th>
-                    <Th>{product.name}</Th>
-                    <Th>{getCategoryNameById(product.category_id)}</Th>
-                    <Th>{product.price} р</Th>
-                    <Th>{product.quantity} шт</Th>
-                    <Th>
-                      {product.photo ? (
-                        <img
-                          src={`http://89.111.170.174:3000${product.photo}`}
-                          alt="Фото"
-                          width="50"
+                {!loadingProducts ? (
+                  filteredProducts.map((product) => (
+                    <Tr key={product.id}>
+                      <Th>{product.id}</Th>
+                      <Th>{product.name}</Th>
+                      <Th>{getCategoryNameById(product.category_id)}</Th>
+                      <Th>{product.price} р</Th>
+                      <Th>{product.quantity} шт</Th>
+                      <Th>
+                        {product.photo ? (
+                          <img
+                            src={`http://89.111.170.174:3000${product.photo}`}
+                            alt="Фото"
+                            style={{
+                              width: "50px",
+                              height: "50px",
+                              objectFit: "contain",
+                            }}
+                          />
+                        ) : (
+                          "Нет фото"
+                        )}
+                      </Th>
+                      <Th>
+                        <IconButton
+                          aria-label="Редактировать"
+                          icon={<AiOutlineEdit />}
+                          colorScheme="gray"
+                          size="sm"
+                          mr={2}
+                          onClick={() => handleEditProduct(product)}
                         />
-                      ) : (
-                        "Нет фото"
-                      )}
+                        <IconButton
+                          aria-label="Удалить"
+                          icon={<AiOutlineDelete />}
+                          colorScheme="red"
+                          size="sm"
+                          onClick={() => handleDeleteProduct(product.id)}
+                        />
+                      </Th>
+                    </Tr>
+                  ))
+                ) : (
+                  <Tr>
+                    <Th>
+                      <Skeleton height="30px" mb={2} borderRadius="md" />
                     </Th>
                     <Th>
-                      <IconButton
-                        aria-label="Редактировать"
-                        icon={<AiOutlineEdit />}
-                        colorScheme="gray"
-                        size="sm"
-                        mr={2}
-                        onClick={() => handleEditProduct(product)}
-                      />
-                      <IconButton
-                        aria-label="Удалить"
-                        icon={<AiOutlineDelete />}
-                        colorScheme="red"
-                        size="sm"
-                        onClick={() => handleDeleteProduct(product.id)}
-                      />
+                      <Skeleton height="30px" mb={2} borderRadius="md" />
+                    </Th>
+                    <Th>
+                      <Skeleton height="30px" mb={2} borderRadius="md" />
+                    </Th>
+                    <Th>
+                      <Skeleton height="30px" mb={2} borderRadius="md" />
+                    </Th>
+                    <Th>
+                      <Skeleton height="30px" mb={2} borderRadius="md" />
+                    </Th>
+                    <Th>
+                      <Skeleton height="30px" mb={2} borderRadius="md" />
+                    </Th>
+                    <Th>
+                      <Skeleton height="30px" mb={2} borderRadius="md" />
                     </Th>
                   </Tr>
-                ))}
+                )}
               </Tbody>
             </Table>
           </TableContainer>
         </Box>
-      </Box>
+      </Flex>
 
-      {/* Модальное окно для подтверждения удаления */}
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isOpen={isOpen} onClose={onClose} isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Удалить товар</ModalHeader>
           <ModalBody>Вы действительно хотите удалить этот товар?</ModalBody>
           <ModalFooter>
             <Button onClick={onClose}>Нет</Button>
-            <Button colorScheme="red" onClick={confirmDelete}>
+            <Button colorScheme="red" onClick={confirmDelete} ml={3}>
               Да
             </Button>
           </ModalFooter>
