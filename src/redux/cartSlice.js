@@ -1,12 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-// Функция для загрузки корзины из localStorage
 const loadCartFromStorage = () => {
   const savedCart = localStorage.getItem("cart");
   return savedCart ? JSON.parse(savedCart) : [];
 };
 
-// Функция для сохранения корзины в localStorage
 const saveCartToStorage = (cart) => {
   localStorage.setItem("cart", JSON.stringify(cart));
 };
@@ -14,7 +12,7 @@ const saveCartToStorage = (cart) => {
 const cartSlice = createSlice({
   name: "cart",
   initialState: {
-    items: loadCartFromStorage(), // Загружаем корзину из localStorage при старте
+    items: loadCartFromStorage(),
   },
   reducers: {
     addToCart: (state, action) => {
@@ -22,7 +20,7 @@ const cartSlice = createSlice({
         (item) => item.id === action.payload.id
       );
 
-      const stock = action.payload.quantity; // ✅ Это количество товара в наличии
+      const stock = action.payload.quantity;
 
       if (itemIndex !== -1) {
         if (state.items[itemIndex].quantity < stock) {
@@ -32,7 +30,7 @@ const cartSlice = createSlice({
         state.items.push({
           ...action.payload,
           quantity: 1,
-          stock, // ✅ Сохраняем ограничение
+          stock,
         });
       }
 
@@ -40,7 +38,7 @@ const cartSlice = createSlice({
     },
     removeFromCart: (state, action) => {
       state.items = state.items.filter((item) => item.id !== action.payload);
-      saveCartToStorage(state.items); // Обновляем localStorage
+      saveCartToStorage(state.items);
     },
     updateQuantity: (state, action) => {
       const itemIndex = state.items.findIndex(
@@ -49,10 +47,10 @@ const cartSlice = createSlice({
       if (itemIndex !== -1) {
         state.items[itemIndex].quantity += action.payload.change;
         if (state.items[itemIndex].quantity < 1) {
-          state.items.splice(itemIndex, 1); // Удаляем товар, если количество стало 0
+          state.items.splice(itemIndex, 1);
         }
       }
-      saveCartToStorage(state.items); // Обновляем localStorage
+      saveCartToStorage(state.items);
     },
     clearCart: (state) => {
       state.items = [];
