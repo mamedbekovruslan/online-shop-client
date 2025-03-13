@@ -1,6 +1,8 @@
 import { Flex } from "@chakra-ui/react";
 
 export const Footer = () => {
+  const fullYear = new Date().getFullYear();
+
   return (
     <Flex
       w="100%"
@@ -11,7 +13,7 @@ export const Footer = () => {
       pos="absolute"
       bottom={0}
     >
-      Интернет магазин
+      Copyright © {fullYear}
     </Flex>
   );
 };

@@ -251,6 +251,7 @@ export const Home = () => {
                                 updateQuantity({ id: product.id, change: 1 })
                               );
                             }}
+                            isDisabled={cartItem.quantity >= product.quantity} // ⛔ запрещаем больше чем есть
                           >
                             ➕
                           </Button>

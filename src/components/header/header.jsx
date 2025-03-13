@@ -8,6 +8,7 @@ import {
   Text,
   useBreakpointValue,
   Badge,
+  position,
 } from "@chakra-ui/react";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -48,6 +49,16 @@ export const Header = () => {
       p={4}
       position="relative"
     >
+      <h1
+        style={{
+          position: "absolute",
+          left: "20px",
+          fontSize: "20px",
+          color: "white",
+        }}
+      >
+        ECom
+      </h1>
       {isMobile ? (
         <Menu>
           <MenuButton

@@ -150,8 +150,11 @@ export const Cart = () => {
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
-                      dispatch(updateQuantity({ id: item.id, change: 1 }));
+                      if (item.quantity < item.stock) {
+                        dispatch(updateQuantity({ id: item.id, change: 1 }));
+                      }
                     }}
+                    isDisabled={item.quantity >= item.stock}
                   >
                     ➕
                   </Button>

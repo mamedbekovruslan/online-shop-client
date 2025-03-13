@@ -87,6 +87,7 @@ export const Product = () => {
             onClick={() =>
               dispatch(updateQuantity({ id: product.id, change: 1 }))
             }
+            isDisabled={cartItem.quantity >= cartItem.stock}
           >
             ➕
           </Button>
@@ -95,7 +96,9 @@ export const Product = () => {
         <Button
           colorScheme="teal"
           mt={4}
-          onClick={() => dispatch(addToCart(product))}
+          onClick={() =>
+            dispatch(addToCart({ ...product, stock: product.quantity }))
+          }
         >
           Купить
         </Button>
