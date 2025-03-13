@@ -7,3 +7,7 @@ body {
 th:hover {
   cursor: pointer
 }
+
+.chakra-toast {
+  margin-bottom: 70px;
+}

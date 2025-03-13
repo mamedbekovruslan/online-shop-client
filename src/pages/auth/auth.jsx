@@ -52,8 +52,6 @@ export const Auth = () => {
         const response = await registerUser(data);
         toast({
           title: "Регистрация успешна",
-          description:
-            response.data.message || "Вы успешно зарегистрировались.",
           status: "success",
           duration: 3000,
           isClosable: true,
@@ -65,7 +63,6 @@ export const Auth = () => {
         localStorage.setItem("role", response.data.role);
         toast({
           title: "Авторизация успешна",
-          description: response.data.message || "Вы успешно авторизовались.",
           status: "success",
           duration: 3000,
           isClosable: true,
