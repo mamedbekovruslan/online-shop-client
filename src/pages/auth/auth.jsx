@@ -1,18 +1,16 @@
+// src/components/auth/Auth.jsx
 import { useState } from "react";
-import {
-  Box,
-  Button,
-  FormControl,
-  FormLabel,
-  Input,
-  Stack,
-  Text,
-  useToast,
-} from "@chakra-ui/react";
+import { Box, Button, Stack, Text, useToast } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { login, register as registerUser } from "../../api/auth";
+import {
+  EmailInput,
+  NameInput,
+  PasswordInput,
+  UsernameInput,
+} from "./components/auth-form/auth-form";
 
 const loginSchema = yup.object({
   username: yup.string().required("Логин обязателен"),
@@ -51,12 +49,7 @@ export const Auth = () => {
 
     try {
       if (isRegistering) {
-        console.log("Submitting data:", data);
-        console.log("Registering user...");
-
         const response = await registerUser(data);
-        console.log("Response:", response);
-
         toast({
           title: "Регистрация успешна",
           description:
@@ -66,14 +59,10 @@ export const Auth = () => {
           isClosable: true,
         });
       } else {
-        console.log("Logging in...");
         const response = await login(data);
-        console.log("Response:", response);
-
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("username", response.data.username);
-        localStorage.setItem("role", response.data.role); // Добавляем роль пользователя
-
+        localStorage.setItem("role", response.data.role);
         toast({
           title: "Авторизация успешна",
           description: response.data.message || "Вы успешно авторизовались.",
@@ -81,31 +70,22 @@ export const Auth = () => {
           duration: 3000,
           isClosable: true,
         });
-
-        window.location.href = "/"; // Перезагружаем страницу
+        window.location.href = "/";
       }
       reset();
     } catch (error) {
-      console.error("Ошибка запроса:", error);
+      const msg = error.response?.data?.message || "Что-то пошло не так.";
+      const isConflict = error.response?.status === 409;
 
-      // Проверка на существующий аккаунт
-      if (error.response?.status === 409) {
-        toast({
-          title: "Ошибка регистрации",
-          description: "Пользователь с таким логином или email уже существует.",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
-      } else {
-        toast({
-          title: "Ошибка",
-          description: error.response?.data?.message || "Что-то пошло не так.",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
-      }
+      toast({
+        title: isConflict ? "Ошибка регистрации" : "Ошибка",
+        description: isConflict
+          ? "Пользователь с таким логином или email уже существует."
+          : msg,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -123,50 +103,15 @@ export const Auth = () => {
     >
       <form onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing={4}>
-          {isRegistering && (
-            <FormControl isInvalid={errors.name}>
-              <FormLabel>Имя</FormLabel>
-              <Input {...register("name")} placeholder="Введите ваше имя" />
-              <Text color="red.500" fontSize="sm">
-                {errors.name?.message}
-              </Text>
-            </FormControl>
-          )}
-
-          {isRegistering && (
-            <FormControl isInvalid={errors.email}>
-              <FormLabel>Email</FormLabel>
-              <Input {...register("email")} placeholder="Введите ваш email" />
-              <Text color="red.500" fontSize="sm">
-                {errors.email?.message}
-              </Text>
-            </FormControl>
-          )}
-
-          <FormControl isInvalid={errors.username}>
-            <FormLabel>Логин</FormLabel>
-            <Input {...register("username")} placeholder="Введите ваш логин" />
-            <Text color="red.500" fontSize="sm">
-              {errors.username?.message}
-            </Text>
-          </FormControl>
-
-          <FormControl isInvalid={errors.password}>
-            <FormLabel>Пароль</FormLabel>
-            <Input
-              type="password"
-              {...register("password")}
-              placeholder="Введите ваш пароль"
-            />
-            <Text color="red.500" fontSize="sm">
-              {errors.password?.message}
-            </Text>
-          </FormControl>
+          {isRegistering && <NameInput register={register} errors={errors} />}
+          {isRegistering && <EmailInput register={register} errors={errors} />}
+          <UsernameInput register={register} errors={errors} />
+          <PasswordInput register={register} errors={errors} />
 
           <Button
             type="submit"
             colorScheme="teal"
-            size="lg"
+            size="md"
             width="full"
             isLoading={isLoading}
           >
