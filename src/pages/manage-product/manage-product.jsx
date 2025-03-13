@@ -155,6 +155,11 @@ export const ManageProduct = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
+    if ((name === "price" || name === "quantity") && Number(value) < 0) {
+      return; // игнорируем отрицательное значение
+    }
+
     setNewProduct((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -271,6 +276,7 @@ export const ManageProduct = () => {
             <FormLabel>Цена</FormLabel>
             <Input
               name="price"
+              min="0"
               type="number"
               value={newProduct.price}
               onChange={handleInputChange}
@@ -280,6 +286,7 @@ export const ManageProduct = () => {
             <FormLabel>Количество</FormLabel>
             <Input
               name="quantity"
+              min="0"
               type="number"
               value={newProduct.quantity}
               onChange={handleInputChange}
