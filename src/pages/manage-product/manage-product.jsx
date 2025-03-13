@@ -25,6 +25,7 @@ import {
   VStack,
   Spinner,
   Skeleton,
+  useToast,
 } from "@chakra-ui/react";
 import {
   AiOutlineArrowUp,
@@ -55,6 +56,7 @@ export const ManageProduct = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [loadingProducts, setLoadingProdutcts] = useState(false);
+  const toast = useToast();
 
   const isMobile = useBreakpointValue({ base: true, md: false });
 
@@ -179,7 +181,12 @@ export const ManageProduct = () => {
       !newProduct.price ||
       !newProduct.quantity
     ) {
-      alert("Все поля должны быть заполнены");
+      toast({
+        title: "Все поля должны быть заполнены",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
       return;
     }
 
@@ -216,7 +223,12 @@ export const ManageProduct = () => {
       setIsEditing(false);
     } catch (err) {
       console.error("Ошибка сохранения товара:", err);
-      alert("Ошибка при сохранении товара");
+      toast({
+        title: "Ошибка при сохранении товара",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     }
   };
 
