@@ -64,7 +64,7 @@ export const Header = () => {
         <h1
           style={{
             position: "absolute",
-            left: "20px",
+            left: isMobile ? "66px" : "20px",
             fontSize: "20px",
             color: "white",
           }}
