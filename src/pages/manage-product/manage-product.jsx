@@ -1,40 +1,5 @@
-import {
-  Flex,
-  Input,
-  Select,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  TableContainer,
-  Button,
-  useDisclosure,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  FormControl,
-  FormLabel,
-  Box,
-  IconButton,
-  Text,
-  useBreakpointValue,
-  VStack,
-  Spinner,
-  Skeleton,
-  useToast,
-} from "@chakra-ui/react";
-import {
-  AiOutlineArrowUp,
-  AiOutlineArrowDown,
-  AiOutlineDelete,
-  AiOutlineEdit,
-  AiOutlineUpload,
-} from "react-icons/ai";
-import { useState, useEffect } from "react";
+import { Box, Flex, Text, useDisclosure, useToast } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
 import {
   addProduct,
   deleteProduct,
@@ -42,6 +7,12 @@ import {
   getProducts,
   patchProduct,
 } from "../../api/auth";
+import {
+  DeleteConfirmModal,
+  ProductFilter,
+  ProductForm,
+  ProductTable,
+} from "./components";
 
 export const ManageProduct = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -57,8 +28,6 @@ export const ManageProduct = () => {
   const [imageFile, setImageFile] = useState(null);
   const [loadingProducts, setLoadingProdutcts] = useState(false);
   const toast = useToast();
-
-  const isMobile = useBreakpointValue({ base: true, md: false });
 
   const [newProduct, setNewProduct] = useState({
     name: "",
@@ -157,10 +126,7 @@ export const ManageProduct = () => {
     const { name, value } = e.target;
 
     if (name === "name" && value.length > 20) return;
-
-    if ((name === "price" || name === "quantity") && Number(value) < 0) {
-      return;
-    }
+    if ((name === "price" || name === "quantity") && Number(value) < 0) return;
 
     setNewProduct((prev) => ({ ...prev, [name]: value }));
   };
@@ -251,234 +217,41 @@ export const ManageProduct = () => {
       </Text>
 
       <Flex direction={{ base: "column", lg: "row" }} gap={6}>
-        <VStack spacing={4} w={{ base: "100%", lg: "25%" }}>
-          <FormControl id="name">
-            <FormLabel>Название товара</FormLabel>
-            <Input
-              name="name"
-              value={newProduct.name}
-              onChange={handleInputChange}
-            />
-          </FormControl>
-          <FormControl id="category">
-            <FormLabel>Категория</FormLabel>
-            <Select
-              name="category_id"
-              value={newProduct.category_id}
-              onChange={handleInputChange}
-            >
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControl id="price">
-            <FormLabel>Цена</FormLabel>
-            <Input
-              name="price"
-              min="0"
-              type="number"
-              value={newProduct.price}
-              onChange={handleInputChange}
-            />
-          </FormControl>
-          <FormControl id="quantity">
-            <FormLabel>Количество</FormLabel>
-            <Input
-              name="quantity"
-              min="0"
-              type="number"
-              value={newProduct.quantity}
-              onChange={handleInputChange}
-            />
-          </FormControl>
-          <FormControl id="image">
-            <FormLabel>Фото</FormLabel>
-            <Button
-              as="label"
-              htmlFor="file-upload"
-              cursor="pointer"
-              leftIcon={<AiOutlineUpload />}
-              colorScheme="teal"
-              variant="outline"
-              width="100%"
-            >
-              Загрузить фото
-            </Button>
-            <Input
-              id="file-upload"
-              type="file"
-              accept="image/*"
-              display="none"
-              onChange={handleImageChange}
-            />
-            {imageFile && (
-              <Text fontSize="sm" mt={2}>
-                Выбран файл: {imageFile.name}
-              </Text>
-            )}
-          </FormControl>
-          <Button colorScheme="teal" onClick={handleSaveProduct} w="100%">
-            {isEditing ? "Сохранить изменения" : "Добавить товар"}
-          </Button>
-        </VStack>
-
+        <ProductForm
+          newProduct={newProduct}
+          handleInputChange={handleInputChange}
+          categories={categories}
+          handleImageChange={handleImageChange}
+          imageFile={imageFile}
+          handleSaveProduct={handleSaveProduct}
+          isEditing={isEditing}
+        />
         <Box w={{ base: "100%", lg: "75%" }}>
-          <Flex mb={4} gap={4} direction={{ base: "column", md: "row" }}>
-            <Input
-              placeholder="Поиск по наименованию..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <Select
-              placeholder="Все категории"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-            >
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </Select>
-          </Flex>
-
-          <TableContainer>
-            <Table size="sm" variant="simple">
-              <Thead>
-                <Tr>
-                  <Th onClick={() => handleSort("id")}>
-                    ID{" "}
-                    {sortColumn === "id" &&
-                      (sortOrder === "asc" ? (
-                        <AiOutlineArrowUp />
-                      ) : (
-                        <AiOutlineArrowDown />
-                      ))}
-                  </Th>
-                  <Th onClick={() => handleSort("name")}>
-                    Наименование{" "}
-                    {sortColumn === "name" &&
-                      (sortOrder === "asc" ? (
-                        <AiOutlineArrowUp />
-                      ) : (
-                        <AiOutlineArrowDown />
-                      ))}
-                  </Th>
-                  <Th>Категория</Th>
-                  <Th onClick={() => handleSort("price")}>
-                    Стоимость{" "}
-                    {sortColumn === "price" &&
-                      (sortOrder === "asc" ? (
-                        <AiOutlineArrowUp />
-                      ) : (
-                        <AiOutlineArrowDown />
-                      ))}
-                  </Th>
-                  <Th onClick={() => handleSort("quantity")}>
-                    Кол-во{" "}
-                    {sortColumn === "quantity" &&
-                      (sortOrder === "asc" ? (
-                        <AiOutlineArrowUp />
-                      ) : (
-                        <AiOutlineArrowDown />
-                      ))}
-                  </Th>
-                  <Th w="100px" maxW="100px">
-                    Фото
-                  </Th>
-                  <Th>Действия</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {!loadingProducts ? (
-                  filteredProducts.map((product) => (
-                    <Tr key={product.id}>
-                      <Th>{product.id}</Th>
-                      <Th>{product.name}</Th>
-                      <Th>{getCategoryNameById(product.category_id)}</Th>
-                      <Th>{product.price} р</Th>
-                      <Th>{product.quantity} шт</Th>
-                      <Th>
-                        {product.photo ? (
-                          <img
-                            src={`http://89.111.170.174:3000${product.photo}`}
-                            alt="Фото"
-                            style={{
-                              width: "50px",
-                              height: "50px",
-                              objectFit: "contain",
-                            }}
-                          />
-                        ) : (
-                          "Нет фото"
-                        )}
-                      </Th>
-                      <Th>
-                        <IconButton
-                          aria-label="Редактировать"
-                          icon={<AiOutlineEdit />}
-                          colorScheme="gray"
-                          size="sm"
-                          mr={2}
-                          onClick={() => handleEditProduct(product)}
-                        />
-                        <IconButton
-                          aria-label="Удалить"
-                          icon={<AiOutlineDelete />}
-                          colorScheme="red"
-                          size="sm"
-                          onClick={() => handleDeleteProduct(product.id)}
-                        />
-                      </Th>
-                    </Tr>
-                  ))
-                ) : (
-                  <Tr>
-                    <Th>
-                      <Skeleton height="30px" mb={2} borderRadius="md" />
-                    </Th>
-                    <Th>
-                      <Skeleton height="30px" mb={2} borderRadius="md" />
-                    </Th>
-                    <Th>
-                      <Skeleton height="30px" mb={2} borderRadius="md" />
-                    </Th>
-                    <Th>
-                      <Skeleton height="30px" mb={2} borderRadius="md" />
-                    </Th>
-                    <Th>
-                      <Skeleton height="30px" mb={2} borderRadius="md" />
-                    </Th>
-                    <Th>
-                      <Skeleton height="30px" mb={2} borderRadius="md" />
-                    </Th>
-                    <Th>
-                      <Skeleton height="30px" mb={2} borderRadius="md" />
-                    </Th>
-                  </Tr>
-                )}
-              </Tbody>
-            </Table>
-          </TableContainer>
+          <ProductFilter
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+            categories={categories}
+          />
+          <ProductTable
+            products={filteredProducts}
+            loading={loadingProducts}
+            sortColumn={sortColumn}
+            sortOrder={sortOrder}
+            handleSort={handleSort}
+            getCategoryNameById={getCategoryNameById}
+            handleEditProduct={handleEditProduct}
+            handleDeleteProduct={handleDeleteProduct}
+          />
         </Box>
       </Flex>
 
-      <Modal isOpen={isOpen} onClose={onClose} isCentered>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Удалить товар</ModalHeader>
-          <ModalBody>Вы действительно хотите удалить этот товар?</ModalBody>
-          <ModalFooter>
-            <Button onClick={onClose}>Нет</Button>
-            <Button colorScheme="red" onClick={confirmDelete} ml={3}>
-              Да
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <DeleteConfirmModal
+        isOpen={isOpen}
+        onClose={onClose}
+        onConfirm={confirmDelete}
+      />
     </Flex>
   );
 };
