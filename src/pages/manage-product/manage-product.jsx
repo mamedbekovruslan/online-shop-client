@@ -156,8 +156,10 @@ export const ManageProduct = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
+    if (name === "name" && value.length > 20) return;
+
     if ((name === "price" || name === "quantity") && Number(value) < 0) {
-      return; // игнорируем отрицательное значение
+      return;
     }
 
     setNewProduct((prev) => ({ ...prev, [name]: value }));
