@@ -248,110 +248,112 @@ export const Admin = () => {
                           </Td>
                         </Tr>
                       ))
-                  : filteredUsers.map((user) => (
-                      <Tr key={user.id}>
-                        <Td>
-                          {editingUser === user.id ? (
-                            <Input
-                              value={user.username}
-                              onChange={(e) =>
-                                handleInputChange(
-                                  user.id,
-                                  "username",
-                                  e.target.value
-                                )
-                              }
-                              size="sm"
-                              width={isMobile ? "200px" : "unset"}
-                            />
-                          ) : (
-                            user.username
-                          )}
-                        </Td>
-                        <Td>
-                          {editingUser === user.id ? (
-                            <Input
-                              value={user.email}
-                              onChange={(e) =>
-                                handleInputChange(
-                                  user.id,
-                                  "email",
-                                  e.target.value
-                                )
-                              }
-                              size="sm"
-                              width={isMobile ? "200px" : "unset"}
-                            />
-                          ) : (
-                            user.email
-                          )}
-                        </Td>
-                        <Td>
-                          {editingUser === user.id ? (
-                            <Select
-                              value={user.role}
-                              onChange={(e) =>
-                                handleInputChange(
-                                  user.id,
-                                  "role",
-                                  e.target.value
-                                )
-                              }
-                              size="sm"
-                              width={isMobile ? "100px" : "unset"}
-                            >
-                              <option value="admin">admin</option>
-                              <option value="moder">moder</option>
-                              <option value="user">user</option>
-                            </Select>
-                          ) : (
-                            user.role
-                          )}
-                        </Td>
-                        <Td>
-                          {editingUser === user.id ? (
-                            <>
-                              <IconButton
-                                icon={<AiOutlineSave />}
-                                aria-label="Сохранить"
-                                colorScheme="green"
+                  : filteredUsers
+                      .filter((user) => user.username !== "admin")
+                      .map((user) => (
+                        <Tr key={user.id}>
+                          <Td>
+                            {editingUser === user.id ? (
+                              <Input
+                                value={user.username}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    user.id,
+                                    "username",
+                                    e.target.value
+                                  )
+                                }
                                 size="sm"
-                                onClick={() => handleUpdateUser(user.id)}
-                                mr={isMobile ? 1 : 2}
+                                width={isMobile ? "200px" : "unset"}
                               />
-                              <IconButton
-                                icon={<AiOutlineClose />}
-                                aria-label="Отмена"
-                                colorScheme="red"
+                            ) : (
+                              user.username
+                            )}
+                          </Td>
+                          <Td>
+                            {editingUser === user.id ? (
+                              <Input
+                                value={user.email}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    user.id,
+                                    "email",
+                                    e.target.value
+                                  )
+                                }
                                 size="sm"
-                                onClick={() => setEditingUser(null)}
+                                width={isMobile ? "200px" : "unset"}
                               />
-                            </>
-                          ) : (
-                            <>
-                              <IconButton
-                                icon={<AiOutlineEdit />}
-                                aria-label="Редактировать"
-                                onClick={() => setEditingUser(user.id)}
+                            ) : (
+                              user.email
+                            )}
+                          </Td>
+                          <Td>
+                            {editingUser === user.id ? (
+                              <Select
+                                value={user.role}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    user.id,
+                                    "role",
+                                    e.target.value
+                                  )
+                                }
                                 size="sm"
-                                colorScheme="blue"
-                                mr={isMobile ? 1 : 2}
-                              />
-                              <IconButton
-                                icon={<AiOutlineDelete />}
-                                aria-label="Удалить"
-                                onClick={() => {
-                                  setDeleteUserId(user.id);
-                                  onOpen();
-                                }}
-                                size="sm"
-                                colorScheme="red"
-                              />
-                            </>
-                          )}
-                        </Td>
-                      </Tr>
-                    ))}
+                                width={isMobile ? "100px" : "unset"}
+                              >
+                                <option value="admin">admin</option>
+                                <option value="moder">moder</option>
+                                <option value="user">user</option>
+                              </Select>
+                            ) : (
+                              user.role
+                            )}
+                          </Td>
+                          <Td>
+                            {editingUser === user.id ? (
+                              <>
+                                <IconButton
+                                  icon={<AiOutlineSave />}
+                                  aria-label="Сохранить"
+                                  colorScheme="green"
+                                  size="sm"
+                                  onClick={() => handleUpdateUser(user.id)}
+                                  mr={isMobile ? 1 : 2}
+                                />
+                                <IconButton
+                                  icon={<AiOutlineClose />}
+                                  aria-label="Отмена"
+                                  colorScheme="red"
+                                  size="sm"
+                                  onClick={() => setEditingUser(null)}
+                                />
+                              </>
+                            ) : (
+                              <>
+                                <IconButton
+                                  icon={<AiOutlineEdit />}
+                                  aria-label="Редактировать"
+                                  onClick={() => setEditingUser(user.id)}
+                                  size="sm"
+                                  colorScheme="blue"
+                                  mr={isMobile ? 1 : 2}
+                                />
+                                <IconButton
+                                  icon={<AiOutlineDelete />}
+                                  aria-label="Удалить"
+                                  onClick={() => {
+                                    setDeleteUserId(user.id);
+                                    onOpen();
+                                  }}
+                                  size="sm"
+                                  colorScheme="red"
+                                />
+                              </>
+                            )}
+                          </Td>
+                        </Tr>
+                      ))}
               </Tbody>
             </Table>
           </Box>
